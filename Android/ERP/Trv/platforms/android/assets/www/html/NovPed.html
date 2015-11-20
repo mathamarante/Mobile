@@ -17,7 +17,7 @@
         }
 
         $.ajax({
-            url: pcWsHttp + "consultaOrcamento?lcIdEmpr=TRV&lcIdFili=1&lcPeNume=" + goNrOrca.value.toString().trim(),
+            url: pcWsHttp + "consultaOrcamento?lcIdEmpr=TRV&lcIdFili=1&lcPeNume=" + goNrOrca.value.toString().trim() + "&lcClVend=" + poCnVend.id_vend.toString().trim(),
             type: "GET",
             dataType: "jsonp",
             contentType: "application/json; charset=utf-8",
@@ -32,11 +32,11 @@
 
                         document.getElementById("divCabe").style.display = "";
 
-                        var lcPdMvpr;
+                        var lcPdMvpr = "";
+
+                        lcPdMvpr = $("#divMvpr").html();
 
                         for (var x = 0; x < lmCnOrca.length; x++) {
-                            lcPdMvpr = "";
-
                             lcPdMvpr += "<div id='div" + lmCnOrca[x].dm_cfab.toString().trim() + "' class='row no-gutter pedimvpr'>";
                             lcPdMvpr += "<div class='col-auto'>" + lmCnOrca[x].dm_cfab.toString().trim() + "</div>";
                             lcPdMvpr += "<div class='col-auto'>" + lmCnOrca[x].mp_qtde.toString().trim() + "<span style='display: none;'>" + goDvQtes.innerHTML.trim() + "</span></div>";
@@ -153,7 +153,7 @@
                         if (lmCnProd[0].qt_sald < 0) { goDvQtes.innerHTML = 0; }
                         else { goDvQtes.innerHTML = lmCnProd[0].qt_sald; }
 
-                        goNrPrun.value = lmCnProd[0].dm_pvar;
+                        goNrPrun.value = lmCnProd[0].dm_pvar.toString().trim();
                         gnDmPvar = lmCnProd[0].dm_pvar;
                         gnWkPrun = lmCnProd[0].dm_pvar;
 
@@ -240,19 +240,23 @@
 
         gnWkPrun = gnDmPvar;
 
+        if (gnDmQtpr > 0) {
+            if (parseFloat(goNrQtde.value) >= gnDmQtpr) { myApp.alert("PRODUTO EM PROMOÇÃO " + brMoney(gnDmProm.toString().trim()), "ALERTA"); }
+            else { myApp.alert("PRODUTO EM PROMOÇÃO ACIMA DE " + gnDmQtpr.toString().trim() + " ITENS " + brMoney(gnDmProm.toString().trim()), "ALERTA"); }
+        }
+
         if (gnDmQtpr > 0 && parseFloat(goNrQtde.value) >= gnDmQtpr) {
             gnWkPrun = gnDmProm;
-            goNrPrun.value = gnDmProm;
-            myApp.alert("PRODUTO EM PROMOÇÃO " + brMoney(gnDmProm.toString().trim()), "ALERTA");
+            goNrPrun.value = gnDmProm.toString().trim();
         }
-        else if (goNrPrun.value < gnDmPvar) {
-            goNrPrun.value = gnDmPvar;
+        else if (parseFloat(goNrPrun.value) < gnDmPvar) {
+            goNrPrun.value = gnDmPvar.toString().trim();
         }
     }
 
     function verificaPreco() {
         if (parseFloat(goNrPrun.value) < gnWkPrun) {
-            goNrPrun.value = gnWkPrun;
+            goNrPrun.value = gnWkPrun.toString().trim();
 
             myApp.alert("VALOR NÃO AUTORIZADO, INFERIOR AO VALOR DE TABELA", "ALERTA");
         }
@@ -312,7 +316,7 @@
     }
 
     function adicionaProdutoPedido() {
-        if (goNrIdcl.value > 0) { }
+        if (parseInt(goNrIdcl.value) > 0) { }
         else {
             myApp.alert("CÓDIGO DO CLIENTE INVÁLIDO", "ERRO");
 
@@ -325,14 +329,14 @@
             return;
         }
 
-        if (goNrQtde.value > 0) { }
+        if (parseFloat(goNrQtde.value) > 0) { }
         else {
             myApp.alert("QUANTIDADE INVÁLIDA", "ERRO");
 
             return;
         }
 
-        if (goNrPrun.value > 0) { }
+        if (parseFloat(goNrPrun.value) > 0) { }
         else {
             myApp.alert("PREÇO INVÁLIDO", "ERRO");
 
@@ -346,7 +350,7 @@
             return;
         }
 
-        if (goNrPdes.value > 0 && parseFloat(goNrQtde.value) > parseFloat(goDvQtes.innerHTML)) {
+        if (parseFloat(goNrPdes.value) > 0 && parseFloat(goNrQtde.value) > parseFloat(goDvQtes.innerHTML)) {
             goNrPdes.value = "";
 
             myApp.alert("PRODUTO COMPRA NA PRAÇA % DESCONTO ZERO", "ERRO");
@@ -370,7 +374,7 @@
         lcPdMvpr += "<div id='div" + goTxCfab.value.toString().trim() + "' class='row no-gutter pedimvpr'>";
         lcPdMvpr += "<div class='col-auto'>" + goTxCfab.value.toString().trim() + "</div>";
         lcPdMvpr += "<div class='col-auto'>" + goNrQtde.value.toString().trim() + "<span style='display: none;'>" + goDvQtes.innerHTML.trim() + "</span></div>";
-        lcPdMvpr += "<div class='col-auto'>" + brMoney(goNrPrun.value.toString().trim()) + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + brMoneyCasasDecimais(goNrPrun.value.toString().trim()) + "</div>";
         lcPdMvpr += "<div class='col-auto'>" + brMoney(goNrQtde.value * goNrPrun.value) + "</div>";
         lcPdMvpr += "<div class='col-auto'>" + brDecimal(goNrPdes.value) + "</div>";
         lcPdMvpr += "<div class='col-auto'><a href='#' onclick='removeProdutoPedido(\"" + goTxCfab.value.toString().trim() + "\")' class='button button-fill color-red'>REMOVER</a></div>";
@@ -465,7 +469,7 @@
     }
 
     function geraOrdemSeparacao() {
-        if (goNrIdcl.value > 0) { }
+        if (parseInt(goNrIdcl.value) > 0) { }
         else {
             myApp.alert("CÓDIGO DO CLIENTE INVÁLIDO", "ERRO");
 
@@ -555,6 +559,8 @@
     }
 
     function limpaCampos() {
+        goNrOrca.value = "";
+
         limpaCamposCliente();
         limpaCamposProduto();
 
@@ -786,6 +792,7 @@
     $(document).ready(function () {
         goDvData.innerHTML = objetoDataParaStringData(ldDtHoje);
 
+        OkTecladoAndroid2("numOrca", "numIdcl");
         OkTecladoAndroid2("numIdcl", "sltClie");
         OkTecladoAndroid2("txtCfab", "numQtde");
         OkTecladoAndroid2("numQtde", "numPrun");

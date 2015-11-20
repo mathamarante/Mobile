@@ -50,6 +50,31 @@ function brMoney(v) {
     return "R$ " + v;
 }
 
+function brMoneyCasasDecimais(v) {
+    if (isNaN(v)) { v = 0; }
+
+    //v = (Math.round((v - 0) * 100)) / 100;
+    v = (v == Math.floor(v)) ? v + ".000" : ((v * 10 == Math.floor(v * 10)) ? v + "0" : v);
+    v = String(v);
+
+    var ps = v.split('.');
+    var whole = ps[0];
+    var sub = ps[1] ? ',' + ps[1] : ',000';
+    var r = /(\d+)(\d{3})/;
+
+    while (r.test(whole)) {
+        whole = whole.replace(r, '$1' + '.' + '$2');
+    }
+
+    v = whole + sub;
+
+    if (v.charAt(0) == '-') {
+        return '-R$' + v.substr(1);
+    }
+
+    return "R$ " + v;
+}
+
 function jsonDate(lcJsDate) {
     if (lcJsDate == null) { return ""; }
 
