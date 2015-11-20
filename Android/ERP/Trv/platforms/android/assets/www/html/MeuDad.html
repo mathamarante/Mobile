@@ -1,0 +1,118 @@
+﻿<script>
+    function alteraSenha() {
+        if (goTxAtua.value.toString().trim() == "") {
+            myApp.alert("CAMPO SENHA ATUAL OBRIGATÓRIO", "ERRO");
+            return false;
+        }
+        else if (goTxNova.value.toString().trim() == "") {
+            myApp.alert("CAMPO NOVA SENHA OBRIGATÓRIO", "ERRO");
+            return false;
+        }
+        else if (goTxConf.value.toString().trim() == "") {
+            myApp.alert("CAMPO CONFIRMAÇÃO DE NOVA SENHA OBRIGATÓRIO", "ERRO");
+            return false;
+        }
+        else if (goTxNova.value.toString().trim().toUpperCase() != goTxConf.value.toString().trim().toUpperCase()) {
+            myApp.alert("SENHAS NÃO CONFEREM", "ERRO");
+            return false;
+        }
+        else if (goTxAtua.value.toString().trim().toUpperCase() == goTxNova.value.toString().trim().toUpperCase()) {
+            myApp.alert("NOVA SENHA IGUAL SENHA ATUAL", "ERRO");
+            return false;
+        }
+
+        var lcNvSmd5 = md5(goTxNova.value.toString().trim().toUpperCase()).toUpperCase();
+
+        if (md5(goTxAtua.value.toString().trim().toUpperCase()).toUpperCase() != poCnVend.vd_smd5) {
+            myApp.alert("SENHA ATUAL ERRADA", "ERRO");
+            return false;
+        }
+
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "alteraSenha?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcVdSmd5=" + poCnVend.vd_smd5 + "&lcNvSmd5=" + lcNvSmd5,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (llSnNova) {
+                myApp.hideIndicator();
+
+                try {
+                    if (llSnNova) {
+                        myApp.alert("SENHA ALTERADA COM SUCESSO", "SUCESSO");
+
+                        goTxAtua.value = "";
+                        goTxNova.value = "";
+                        goTxConf.value = "";
+
+                        poCnVend.vd_smd5 = lcNvSmd5;
+                    }
+                    else { myApp.alert("ERRO AO ALTERAR SENHA", "ERRO"); }
+                }
+                catch (loWkErro) { myApp.alert("ERRO AO ALTERAR SENHA", "ERRO"); }
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO ALTERAR SENHA", "ERRO");
+            }
+        });
+    }
+</script>
+<div class="list-block">
+    <ul>
+        <li class="item-content">
+            <div class="item-inner">
+                <div id="divNome" class="item-title centraliza"></div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">SENHA ATUAL</div>
+                    <div class="item-input">
+                        <input id="txtAtua" type="password" placeholder="DIGITE A SENHA ATUAL">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">NOVA SENHA</div>
+                    <div class="item-input">
+                        <input id="txtNova" type="password" placeholder="DIGITE A NOVA SENHA">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">CONFIRMAÇÃO</div>
+                    <div class="item-input">
+                        <input id="txtConf" type="password" placeholder="DIGITE A CONFIRMAÇÃO DA NOVA SENHA">
+                    </div>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+<a href="#" id="ahrSalv" onclick="alteraSenha();" class="button button-fill button-raised">SALVAR</a>
+<script>
+    var goTxAtua = document.getElementById("txtAtua");
+    var goTxNova = document.getElementById("txtNova");
+    var goTxConf = document.getElementById("txtConf");
+    var goAhSalv = document.getElementById("ahrSalv");
+
+    $(document).ready(function () {
+        document.getElementById("divNome").innerHTML = poCnVend.vd_nome;
+
+        OkTecladoAndroid2("txtAtua", "txtNova");
+
+        OkTecladoAndroid2("txtNova", "txtConf");
+
+        OkTecladoAndroid3("txtConf", "ahrSalv", "ahrSalv");
+    });
+</script>

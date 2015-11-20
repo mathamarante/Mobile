@@ -1,0 +1,280 @@
+﻿<script>
+    function limpaCamposTitAbe() {
+        goDvTeab.style.display = "none";
+        document.getElementById("divCodi").innerHTML = "";
+        document.getElementById("divNome").innerHTML = "";
+        document.getElementById("divFant").innerHTML = "";
+        document.getElementById("divCida").innerHTML = "";
+    }
+
+    function pesquisaTitulosEmAberto(lnIdRowx) {
+        var lcCaCodi = document.getElementById("divRow" + lnIdRowx.toString().trim()).innerHTML.trim();
+
+        myApp.showTab("#TitAbe");
+
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaTitulosEmAberto?lcIdUser=" + cUIdUser + "&lcCaCodi=" + lcCaCodi + "&lcIdEmpr=CDM",
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmTiAber) {
+                try {
+                    var lcTiAber = "";
+
+                    document.getElementById("divCodi").innerHTML = gmPqClie[lnIdRowx].CA_CODI;
+                    document.getElementById("divNome").innerHTML = gmPqClie[lnIdRowx].CA_NOME;
+                    document.getElementById("divFant").innerHTML = gmPqClie[lnIdRowx].CA_FANT;
+                    document.getElementById("divCida").innerHTML = gmPqClie[lnIdRowx].ID_CIDA;
+                    document.getElementById("divVlab").innerHTML = brMoney(gmPqClie[lnIdRowx].TP_VENC + gmPqClie[lnIdRowx].TP_AVEN);
+
+                    goDvTeab.style.display = "";
+
+                    lcTiAber += "<div class='row no-gutter'>";
+                    lcTiAber += "<div class='col-auto'><b>DUPLICATA</b></div>";
+                    lcTiAber += "<div class='col-auto'><b>PARCELA</b></div>";
+                    lcTiAber += "<div class='col-auto'><b>NR. PED. SITE</b></div>";
+                    lcTiAber += "<div class='col-auto'><b>NR. PEDIDO</b></div>";
+                    lcTiAber += "<div class='col-auto'><b>DT. EMISSÃO</b></div>";
+                    lcTiAber += "<div class='col-auto'><b>DT. VENC.</b></div>";
+                    lcTiAber += "<div class='col-auto'><b>DIAS ATRASO</b></div>";
+                    lcTiAber += "<div class='col-auto'><b>VL. EM ABERTO</b></div>";
+                    lcTiAber += "</div>";
+
+                    for (var x = 0; x < lmTiAber.length; x++) {
+                        lcTiAber += "<div class='row no-gutter'>";
+                        lcTiAber += "<div class='col-auto'>" + lmTiAber[x].CR_NUME + "</div>";
+                        lcTiAber += "<div class='col-auto'>" + lmTiAber[x].CR_PARC + "</div>";
+                        lcTiAber += "<div class='col-auto'>" + escondeNegativos(lmTiAber[x].PS_NUME) + "</div>";
+                        lcTiAber += "<div class='col-auto'>" + lmTiAber[x].PE_NUME + "</div>";
+                        lcTiAber += "<div class='col-auto'>" + lmTiAber[x].CR_DTEM + "</div>";
+                        lcTiAber += "<div class='col-auto'>" + lmTiAber[x].CR_DTVE + "</div>";
+                        lcTiAber += "<div class='col-auto'>" + escondeNegativos(lmTiAber[x].DI_ATRS) + "</div>";
+                        lcTiAber += "<div class='col-auto'>" + brMoney(lmTiAber[x].VL_ABER) + "</div>";
+                        lcTiAber += "</div>";
+                    }
+
+                    $("#divTeab").html(lcTiAber).show();
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR TÍTULOS EM ABERTO", "ERRO");
+                    limpaCamposTitAbe();
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO PESQUISAR TÍTULOS EM ABERTO", "ERRO");
+                limpaCamposTitAbe();
+            }
+        });
+    }
+
+    function limpaCamposPosFin() {
+        goDvPesq.style.display = "none";
+        document.getElementById("divVenc").innerHTML = "";
+        document.getElementById("divAven").innerHTML = "";
+        gmPqClie = [];
+    }
+
+    function pesquisaClientesInadimplentes() {
+        var loTxPesq = document.getElementById("txtPesq");
+        var loDvVenc = document.getElementById("divVenc");
+        var loDvAven = document.getElementById("divAven");
+        var lcSlPesq = document.getElementById("sltPesq").value.toString().trim();
+        var lcTxPesq = loTxPesq.value.toString().trim();
+        var lcWsHttp = "";
+
+        myApp.showTab("#PosFin");
+
+        if (lcTxPesq == "") {
+            lcWsHttp = pcWsHttp + "pesquisaClientesInadimplentes?lcIdEmpr=CDM&lcIdUser=" + cUIdUser + "&lcCaCodi:IsNull=True&lcCaNome:IsNull=True&lcCaFant:IsNull=True&lcIdCida:IsNull=True";
+        }
+        else if (lcSlPesq == "id_clie") {
+
+            if (isNaN(lcTxPesq)) {
+                myApp.alert("CÓDIGO INVÁLIDO", "ERRO");
+                goDvPesq.style.display = "none";
+                loDvVenc.innerHTML = "";
+                loDvAven.innerHTML = "";
+
+                return false;
+            }
+
+            lcWsHttp = pcWsHttp + "pesquisaClientesInadimplentes?lcIdEmpr=CDM&lcIdUser=" + cUIdUser + "&lcCaCodi=" + lcTxPesq + "&lcCaNome:IsNull=True&lcCaFant:IsNull=True&lcIdCida:IsNull=True";
+        }
+        else if (lcSlPesq == "cl_fant") {
+            lcWsHttp = pcWsHttp + "pesquisaClientesInadimplentes?lcIdEmpr=CDM&lcIdUser=" + cUIdUser + "&lcCaCodi:IsNull=True&lcCaNome=" + lcTxPesq + "&lcCaFant:IsNull=True&lcIdCida:IsNull=True";
+        }
+        else if (lcSlPesq == "id_cida") {
+            lcWsHttp = pcWsHttp + "pesquisaClientesInadimplentes?lcIdEmpr=CDM&lcIdUser=" + cUIdUser + "&lcCaCodi:IsNull=True&lcCaNome:IsNull=True&lcCaFant:IsNull=True&lcIdCida=" + lcTxPesq;
+        }
+
+        myApp.showIndicator();
+
+        $.ajax({
+            url: lcWsHttp,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmPqClie) {
+                try {
+                    if (lmPqClie.length > 0) {
+                        var lcPqClie = "";
+
+                        goDvPesq.style.display = "";
+                        gnTpVenc = 0;
+                        gnTpAven = 0;
+                        gmPqClie = lmPqClie;
+
+                        lcPqClie += "<div class='row no-gutter'>";
+                        lcPqClie += "<div class='col-auto'><b>CÓDIGO</b></div>";
+                        lcPqClie += "<div class='col-auto'><b>NOME FANTASIA</b></div>";
+                        lcPqClie += "<div class='col-auto'><b>CIDADE</b></div>";
+                        lcPqClie += "<div class='col-auto'><b>VENCIDO</b></div>";
+                        lcPqClie += "<div class='col-auto'><b>A VENCER</b></div>";
+                        lcPqClie += "</div>";
+
+                        for (var x = 0; x < lmPqClie.length; x++) {
+                            lcPqClie += "<div onclick='pesquisaTitulosEmAberto(" + x + ");' class='row no-gutter'>";
+                            lcPqClie += "<div id='divRow" + x + "' class='col-auto'>" + lmPqClie[x].CA_CODI + "</div>";
+                            lcPqClie += "<div class='col-auto'>" + lmPqClie[x].CA_FANT + "</div>";
+                            lcPqClie += "<div class='col-auto'>" + lmPqClie[x].ID_CIDA + "</div>";
+                            lcPqClie += "<div class='col-auto'>" + brMoney(lmPqClie[x].TP_VENC) + "</div>";
+                            lcPqClie += "<div class='col-auto'>" + brMoney(lmPqClie[x].TP_AVEN) + "</div>";
+                            lcPqClie += "</div>";
+
+                            gnTpVenc += lmPqClie[x].TP_VENC;
+                            gnTpAven += lmPqClie[x].TP_AVEN;
+                        }
+
+                        loDvVenc.innerHTML = brMoney(gnTpVenc);
+                        loDvAven.innerHTML = brMoney(gnTpAven);
+
+                        $("#divPesq").html(lcPqClie).show();
+                    }
+                    else {
+                        myApp.alert("NENHUM CLIENTE INADIMPLENTE ENCONTRADO", "ALERTA");
+                        limpaCamposPosFin();
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR CLIENTES INADIMPLENTES", "ERRO");
+                    limpaCamposPosFin();
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO PESQUISAR CLIENTES INADIMPLENTES", "ERRO");
+                limpaCamposPosFin();
+            }
+        });
+    }
+</script>
+<div class="list-block">
+    <ul>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-input">
+                        <select id="sltPesq" name="sltPesq">
+                            <option value="id_clie" selected="selected">CÓDIGO</option>
+                            <option value="cl_fant">NOME FANTASIA</option>
+                            <option value="id_cida">CIDADE</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-input">
+                        <input id="txtPesq" type="text" placeholder="DIGITE O TEXTO DA PESQUISA" />
+                    </div>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+<a href="#" onclick="pesquisaClientesInadimplentes();" class="button button-fill button-raised">PESQUISAR</a>
+<div class="content-block">
+    <div class="buttons-row">
+        <a href="#PosFin" class="tab-link active button">POSIÇÃO FINANCEIRA</a>
+        <a href="#TitAbe" class="tab-link button">TÍTULOS EM ABERTO</a>
+    </div>
+</div>
+<div class="tabs">
+    <div id="PosFin" class="tab active">
+        <div class="list-block">
+            <ul>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">VL. TOTAL VENCIDO</div>
+                        <div id="divVenc" style="color: red;" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">VL. TOTAL A VENCER</div>
+                        <div id="divAven" style="color: red;" class="item-after"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div id="divPesq" class="content-block"></div>
+    </div>
+    <div id="TitAbe" class="tab">
+        <div class="list-block">
+            <ul>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CÓDIGO</div>
+                        <div id="divCodi" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">RAZÃO SOCIAL</div>
+                        <div id="divNome" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">NOME FANTASIA</div>
+                        <div id="divFant" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CIDADE</div>
+                        <div id="divCida" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">VL. TOTAL EM ABERTO</div>
+                        <div id="divVlab" style="color: red;" class="item-after"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div id="divTeab" class="content-block"></div>
+    </div>
+</div>
+<script>
+    var goDvPesq = document.getElementById("divPesq");
+    var goDvTeab = document.getElementById("divTeab");
+    var gnTpVenc = 0, gnTpAven = 0;
+    var gmPqClie = [];
+
+    $(document).ready(function () {
+        pesquisaClientesInadimplentes();
+    });
+</script>

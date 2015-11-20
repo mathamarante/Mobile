@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <link rel="stylesheet" href="../framework7/css/framework7.material.min.css">
+    <link rel="stylesheet" href="../framework7/css/framework7.material.colors.min.css">
+    <link rel="stylesheet" href="../framework7/css/my-app.css">
+    <link rel="stylesheet" href="../css/estilo.css">
+    <script>
+        function sair() {
+            myApp.confirm("DESEJA SAIR?", "ALERTA", function () {
+                myApp.showIndicator();
+                localStorage.removeItem("oUCnVend");
+                window.location = "AutLgn.html";
+            });
+        }
+
+        function redireciona(lcNmPagi, lcTiPagi) {
+            myApp.showIndicator();
+            $("#divPagi").load(lcNmPagi);
+            poDvTitu.innerHTML = lcTiPagi;
+            myApp.hideIndicator();
+        }
+
+        function onLoad() { document.addEventListener("deviceready", onDeviceReady, false); }
+
+        function onDeviceReady() { document.addEventListener("backbutton", sair, false); }
+    </script>
+</head>
+<body onload="onLoad()" class="theme-green">
+    <div class="statusbar-overlay"></div>
+    <div class="panel-overlay"></div>
+    <div class="panel panel-left panel-cover">
+        <div class="list-block">
+            <ul>
+                <li>
+                    <a href="#" onclick="redireciona('PagIni.html', 'INÍCIO');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/inicio.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">INÍCIO</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="redireciona('PsqCli.html', 'CLIENTES');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/clientes.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">CLIENTES</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="redireciona('PosFin.html', 'FINANCEIRO');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/financeiro.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">FINANCEIRO</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="redireciona('PsqPed.html', 'PEDIDOS');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/pedidos.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">PEDIDOS</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="redireciona('NovPed.html', 'NOVO PEDIDO');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/novoPedido.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">NOVO PED.</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="sair();" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/sair.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">SAIR</div>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="views">
+        <div class="view view-main">
+            <div class="pages navbar-fixed toolbar-fixed">
+                <div class="page">
+                    <div class="navbar">
+                        <div class="navbar-inner">
+                            <div id="divTitu" class="center"></div>
+                        </div>
+                    </div>
+                    <div class="toolbar">
+                        <div class="toolbar-inner">
+                            <a href="#" data-panel="left" class="link icon-only open-panel">
+                                <i class="icon icon-bars"></i>
+                                <span>MENU</span>
+                            </a>
+                            <a href="#" onclick="redireciona('MeuDad.html', 'MEUS DADOS');" class="link">
+                                <img src="../img/usuario.png" />
+                                &nbsp;
+                                <span id="spnUsua"></span>
+                            </a>
+                        </div>
+                    </div>
+                    <div id="divPagi" class="page-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../cordova.js"></script>
+    <script type="text/javascript" src="../framework7/js/framework7.min.js"></script>
+    <script type="text/javascript" src="../framework7/js/my-app.js"></script>
+    <script type="text/javascript" src="../js/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="../js/md5.min.js"></script>
+    <script type="text/javascript" src="../js/script.js"></script>
+    <script>
+        var poDvTitu = document.getElementById("divTitu");
+        //var pcWsHttp = "http://localhost/VS2013/ERP/Trv/WebService/Application/Service.svc/";
+        //var pcWsHttp = "http://192.168.5.216/ERP/Trv/WebService/Service.svc/";
+        var pcWsHttp = "http://trevao.clientebasetech.com:6601/WebService/Service.svc/";
+        var poCnVend = {};
+
+        var myApp = new Framework7({
+            material: true,
+
+            onAjaxStart: function (xhr) {
+                myApp.showIndicator();
+            },
+            onAjaxComplete: function (xhr) {
+                myApp.hideIndicator();
+            }
+        });
+
+        $(document).ready(function () {
+            poCnVend = JSON.parse(localStorage.getItem("oUCnVend"));
+
+            poDvTitu.innerHTML = "INÍCIO";
+            document.getElementById("spnUsua").innerHTML = poCnVend.vd_fant;
+
+            $("#divPagi").load("PagIni.html");
+        });
+    </script>
+</body>
+</html> 

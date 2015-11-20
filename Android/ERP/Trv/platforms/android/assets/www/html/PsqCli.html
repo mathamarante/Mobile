@@ -1,0 +1,678 @@
+﻿<script>
+    function pesquisaUltimosDezClientesCadastrados() {
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaUltimosDezClientesCadastrados?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim(),
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmUlClie) {
+                try {
+                    if (lmUlClie.length > 0) {
+                        var lcUlClie = "";
+
+                        goDvPesq.style.display = "";
+                        goDvTgrd.style.display = "";
+
+                        lcUlClie += "<div class='row no-gutter'>";
+                        lcUlClie += "<div class='col-auto'><b>CÓDIGO</b></div>";
+                        lcUlClie += "<div class='col-auto'><b>R. SOCIAL</b></div>";
+                        lcUlClie += "<div class='col-auto'><b>CNPJ</b></div>";
+                        lcUlClie += "<div class='col-auto'><b>CIDADE</b></div>";
+                        lcUlClie += "<div class='col-auto'><b>TELEFONE</b></div>";
+                        lcUlClie += "</div>";
+
+                        for (var x = 0; x < lmUlClie.length; x++) {
+                            lcUlClie += "<div onclick='consultaInformacoesCliente(" + x + ");' class='row no-gutter'>";
+                            lcUlClie += "<div id='divIdc" + x + "' class='col-auto'>" + lmUlClie[x].id_clie + "</div>";
+                            lcUlClie += "<div class='col-auto'>" + lmUlClie[x].cl_nome + "</div>";
+                            lcUlClie += "<div class='col-auto'>" + formataCNPJ(lmUlClie[x].cl_cnpj) + "</div>";
+                            lcUlClie += "<div class='col-auto'>" + lmUlClie[x].id_cida + "</div>";
+                            lcUlClie += "<div class='col-auto'>" + lmUlClie[x].cl_fone + "</div>";
+                            lcUlClie += "</div>";
+                        }
+
+                        $("#divPesq").html(lcUlClie).show();
+                    }
+                    else {
+                        myApp.alert("NENHUM CLIENTE ENCONTRADO", "ALERTA");
+                        goDvPesq.style.display = "none";
+                        goDvTgrd.style.display = "none";
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR ÚLTIMOS CLIENTES", "ERRO");
+                    goDvPesq.style.display = "none";
+                    goDvTgrd.style.display = "none";
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO PESQUISAR ÚLTIMOS CLIENTES", "ERRO");
+                goDvPesq.style.display = "none";
+                goDvTgrd.style.display = "none";
+            }
+        });
+    }
+
+    function pesquisaClientes() {
+        var loTxPesq = document.getElementById("txtPesq");
+        var lcSlPesq = goSlPesq.value.toString().trim();
+        var lcTxPesq = loTxPesq.value.toString().trim();
+        var lcWsHttp = "";
+
+        goDvTgrd.style.display = "none";
+        myApp.showTab("#PsqCli");
+
+        if (lcTxPesq == "") { lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone:IsNull=True"; }
+        else if (lcSlPesq == "id_clie") {
+            if (isNaN(lcTxPesq)) {
+                myApp.alert("CÓDIGO INVÁLIDO", "ERRO");
+                goDvPesq.style.display = "none";
+
+                return false;
+            }
+            lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie=" + lcTxPesq + "&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone:IsNull=True";
+        }
+        else if (lcSlPesq == "cl_nome") { lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie:IsNull=True&lcClNome=" + lcTxPesq + "&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone:IsNull=True"; }
+        else if (lcSlPesq == "cl_cnpj") {
+            loTxPesq.value = lcTxPesq.replace(/[^\d,+$]+/g, '');
+
+            lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj=" + loTxPesq.value + "&lcIdCida:IsNull=True&lcClFone:IsNull=True";
+        }
+        else if (lcSlPesq == "id_cida") { lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida=" + lcTxPesq + "&lcClFone:IsNull=True"; }
+        else if (lcSlPesq == "cl_fone") { lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone=" + lcTxPesq; }
+
+        myApp.showIndicator();
+
+        $.ajax({
+            url: lcWsHttp,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmPqClie) {
+                try {
+                    if (lmPqClie.length > 0) {
+                        var lcPqClie = "";
+
+                        goDvPesq.style.display = "";
+
+                        lcPqClie += "<div class='row no-gutter'>";
+                        lcPqClie += "<div class='col-auto'><b>CÓDIGO</b></div>";
+                        lcPqClie += "<div class='col-auto'><b>R. SOCIAL</b></div>";
+                        lcPqClie += "<div class='col-auto'><b>CNPJ</b></div>";
+                        lcPqClie += "<div class='col-auto'><b>CIDADE</b></div>";
+                        lcPqClie += "<div class='col-auto'><b>TELEFONE</b></div>";
+                        lcPqClie += "</div>";
+
+                        for (var x = 0; x < lmPqClie.length; x++) {
+                            lcPqClie += "<div onclick='consultaInformacoesCliente(" + x + ");' class='row no-gutter'>";
+                            lcPqClie += "<div id='divIdc" + x + "' class='col-auto'>" + lmPqClie[x].id_clie + "</div>";
+                            lcPqClie += "<div class='col-auto'>" + lmPqClie[x].cl_nome + "</div>";
+                            lcPqClie += "<div class='col-auto'>" + formataCNPJ(lmPqClie[x].cl_cnpj) + "</div>";
+                            lcPqClie += "<div class='col-auto'>" + lmPqClie[x].id_cida + "</div>";
+                            lcPqClie += "<div class='col-auto'>" + lmPqClie[x].cl_fone + "</div>";
+                            lcPqClie += "</div>";
+                        }
+
+                        $("#divPesq").html(lcPqClie).show();
+                    }
+                    else {
+                        myApp.alert("NENHUM CLIENTE ENCONTRADO", "ALERTA");
+                        goDvPesq.style.display = "none";
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR CLIENTES", "ERRO");
+                    goDvPesq.style.display = "none";
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO PESQUISAR CLIENTES", "ERRO");
+                goDvPesq.style.display = "none";
+            }
+        });
+    }
+
+    function consultaInformacoesCliente(lnNrLinh) {
+        var loDvIdcl;
+        var lcIdClie;
+
+        if (lnNrLinh == -1) {
+            lcIdClie = gcIdClie;
+        }
+        else {
+            loDvIdcl = document.getElementById("divIdc" + lnNrLinh.toString().trim());
+            lcIdClie = loDvIdcl.innerHTML.trim();
+        }
+
+        myApp.showTab('#InfCli');
+
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "consultaInformacoesCliente?lcIdEmpr=TRV&lcIdClie=" + lcIdClie + "&lcIdVend=" + poCnVend.id_vend.toString().trim(),
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmCnClie) {
+                try {
+                    var loCnClie = lmCnClie[0];
+
+                    pesquisaContatosCliente(lcIdClie);
+                    pesquisaUltimosProdutosComprados(lcIdClie);
+
+                    document.getElementById("divCodi").innerHTML = loCnClie.id_clie;
+                    document.getElementById("divNome").innerHTML = loCnClie.cl_nome;
+                    document.getElementById("divFant").innerHTML = loCnClie.cl_fant;
+                    document.getElementById("divEnde").innerHTML = loCnClie.cl_ende;
+
+                    if (loCnClie.cl_nume != "") {
+                        document.getElementById("divEnde").innerHTML += ", " + loCnClie.cl_nume;
+                    }
+
+                    document.getElementById("divBair").innerHTML = loCnClie.cl_bair;
+                    document.getElementById("divCida").innerHTML = loCnClie.id_cida + " - " + loCnClie.id_esta;
+                    document.getElementById("divNcep").innerHTML = formataCEP(loCnClie.cl_ncep);
+                    document.getElementById("divRegi").innerHTML = loCnClie.rg_deno;
+                    document.getElementById("divCnpj").innerHTML = formataCNPJ(loCnClie.cl_cnpj);
+                    document.getElementById("divInsc").innerHTML = loCnClie.cl_insc;
+                    document.getElementById("divNcpf").innerHTML = formataCPF(loCnClie.cl_ncpf);
+                    document.getElementById("divNrrg").innerHTML = loCnClie.cl_nrrg;
+                    document.getElementById("divHttp").innerHTML = loCnClie.cl_http;
+                    document.getElementById("divMail").innerHTML = loCnClie.cl_mail;
+                    document.getElementById("divFone").innerHTML = loCnClie.cl_fone;
+                    document.getElementById("divCelu").innerHTML = loCnClie.cl_celu;
+                    document.getElementById("divComp").innerHTML = loCnClie.cl_comp;
+                    document.getElementById("divSegm").innerHTML = loCnClie.sg_deno;
+
+                    if (loCnClie.cl_pfpj == 1) {
+                        document.getElementById("divPfpj").innerHTML = "Pessoa Física";
+                    }
+                    else {
+                        document.getElementById("divPfpj").innerHTML = "Pessoa Jurídica";
+                    }
+
+                    document.getElementById("txaObse").innerHTML = loCnClie.cl_obse;
+
+                    //Endereço de cobrança
+                    document.getElementById("divEndc").innerHTML = loCnClie.cl_endc;
+                    if (loCnClie.cl_numc != "") {
+                        document.getElementById("divEndc").innerHTML += ", " + loCnClie.cl_numc;
+                    }
+                    document.getElementById("divBaic").innerHTML = loCnClie.cl_baic;
+                    document.getElementById("divCidc").innerHTML = loCnClie.cl_cidc + " - " + loCnClie.cl_estc;
+                    document.getElementById("divCepc").innerHTML = formataCEP(loCnClie.cl_cepc);
+                    document.getElementById("divCnpc").innerHTML = formataCNPJ(loCnClie.cl_cnpc);
+                    document.getElementById("divIncc").innerHTML = loCnClie.cl_incc;
+                    //Endereço de cobrança
+
+                    //Endereço de entrega
+                    document.getElementById("divEndt").innerHTML = loCnClie.cl_endt;
+                    if (loCnClie.cl_numt != "") {
+                        document.getElementById("divEndt").innerHTML += ", " + loCnClie.cl_numt;
+                    }
+                    document.getElementById("divBait").innerHTML = loCnClie.cl_bait;
+                    document.getElementById("divCidt").innerHTML = loCnClie.cl_cidt + " - " + loCnClie.cl_estt;
+                    document.getElementById("divCept").innerHTML = formataCEP(loCnClie.cl_cept);
+                    //Endereço de entrega
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO CONSULTAR CLIENTE", "ERRO");
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO CONSULTAR CLIENTE", "ERRO");
+            }
+        });
+    }
+
+    function pesquisaContatosCliente(lcIdClie) {
+        var loDvCont = document.getElementById("divCont");
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaContatosCliente?lcIdEmpr=TRV&lcIdClie=" + lcIdClie,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmPqCont) {
+                try {
+                    if (lmPqCont.length > 0) {
+                        var lcPqCont = "";
+
+                        loDvCont.style.display = "";
+
+                        lcPqCont += "<div class='row no-gutter'>";
+                        lcPqCont += "<div class='col-auto'><b>TP. CONT.</b></div>";
+                        lcPqCont += "<div class='col-auto'><b>NOME</b></div>";
+                        lcPqCont += "<div class='col-auto'><b>E-MAIL</b></div>";
+                        lcPqCont += "<div class='col-auto'><b>TELEFONE</b></div>";
+                        lcPqCont += "<div class='col-auto'><b>CELULAR</b></div>";
+                        lcPqCont += "</div>";
+
+                        for (var x = 0; x < lmPqCont.length; x++) {
+                            lcPqCont += "<div class='row no-gutter'>";
+                            lcPqCont += "<div class='col-auto'>" + lmPqCont[x].tp_deno + "</div>";
+                            lcPqCont += "<div class='col-auto'>" + lmPqCont[x].co_nome + "</div>";
+                            lcPqCont += "<div class='col-auto'>" + lmPqCont[x].co_mail + "</div>";
+                            lcPqCont += "<div class='col-auto'>" + lmPqCont[x].co_fone + "</div>";
+                            lcPqCont += "<div class='col-auto'>" + lmPqCont[x].co_celu + "</div>";
+                            lcPqCont += "</div>";
+                        }
+
+                        $("#divCont").html(lcPqCont).show();
+                    }
+                    else {
+                        loDvCont.style.display = "none";
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR CONTATOS", "ERRO");
+                    loDvCont.style.display = "none";
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO PESQUISAR CONTATOS", "ERRO");
+                loDvCont.style.display = "none";
+            }
+        });
+    }
+
+    function pesquisaUltimosProdutosComprados(lcIdClie) {
+        var loDvUlpr = document.getElementById("divUlpr");
+        var loDvHspr = document.getElementById("divHspr");
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaUltimosProdutosComprados?lcIdEmpr=TRV&lcIdClie=" + lcIdClie,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmUlProd) {
+                try {
+                    if (lmUlProd.length > 0) {
+                        var lcUlProd = "";
+
+                        lcUlProd += "<div class='row no-gutter'>";
+                        lcUlProd += "<div class='col-auto'><b>COD. FAB.</b></div>";
+                        lcUlProd += "<div class='col-auto'><b>DENO.</b></div>";
+                        lcUlProd += "<div class='col-auto'><b>PREÇO</b></div>";
+                        lcUlProd += "<div class='col-auto'><b>DATA</b></div>";
+                        lcUlProd += "</div>";
+
+                        for (var x = 0; x < lmUlProd.length; x++) {
+                            lcUlProd += "<div onclick='pesquisaHistoricoProduto(" + x + ", " + lcIdClie + ");' class='row no-gutter'>";
+                            lcUlProd += "<div id='divCfa" + x.toString().trim() + "' class='col-auto'>" + lmUlProd[x].dm_cfab + "</div>";
+                            lcUlProd += "<div class='col-auto'>" + lmUlProd[x].dm_deno + "</div>";
+                            lcUlProd += "<div class='col-auto'>" + brMoney(lmUlProd[x].mp_prun) + "</div>";
+                            lcUlProd += "<div class='col-auto'>" + jsonDate(lmUlProd[x].pe_data) + "</div>";
+                            lcUlProd += "</div>";
+                        }
+
+                        $("#divUlpr").html(lcUlProd).show();
+
+                        pesquisaHistoricoProduto(0, lcIdClie);
+                    }
+                    else {
+                        loDvUlpr.style.display = "none";
+                        loDvHspr.style.display = "none";
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR ÚLTIMOS PRODUTOS COMPRADOS", "ERRO");
+                    loDvUlpr.style.display = "none";
+                    loDvHspr.style.display = "none";
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO PESQUISAR ÚLTIMOS PRODUTOS COMPRADOS", "ERRO");
+                loDvUlpr.style.display = "none";
+                loDvHspr.style.display = "none";
+            }
+        });
+    }
+
+    function pesquisaHistoricoProduto(lnNrLinh, lcIdClie) {
+        myApp.showIndicator();
+
+        var loDvHspr = document.getElementById("divHspr");
+        var loDvCfab = document.getElementById("divCfa" + lnNrLinh.toString().trim());
+        var lcDmCfab = loDvCfab.innerHTML.trim();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaHistoricoProduto?lcIdEmpr=TRV&lcIdClie=" + lcIdClie + "&lcDmCfab=" + lcDmCfab,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmHsProd) {
+                try {
+                    if (lmHsProd.length > 0) {
+                        var lcHsProd = "";
+
+                        lcHsProd += "<div class='row no-gutter'>";
+                        lcHsProd += "<div class='col-auto'><b>COD. FAB.</b></div>";
+                        lcHsProd += "<div class='col-auto'><b>DENO.</b></div>";
+                        lcHsProd += "<div class='col-auto'><b>PREÇO</b></div>";
+                        lcHsProd += "<div class='col-auto'><b>DATA</b></div>";
+                        lcHsProd += "</div>";
+
+                        for (var x = 0; x < lmHsProd.length; x++) {
+                            lcHsProd += "<div class='row no-gutter'>";
+                            lcHsProd += "<div class='col-auto'>" + lmHsProd[x].dm_cfab + "</div>";
+                            lcHsProd += "<div class='col-auto'>" + lmHsProd[x].dm_deno + "</div>";
+                            lcHsProd += "<div class='col-auto'>" + brMoney(lmHsProd[x].mp_prun) + "</div>";
+                            lcHsProd += "<div class='col-auto'>" + jsonDate(lmHsProd[x].pe_data) + "</div>";
+                            lcHsProd += "</div>";
+                        }
+
+                        $("#divHspr").html(lcHsProd).show();
+                    }
+                    else {
+                        loDvHspr.style.display = "none";
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR HISTÓRICO DO PRODUTO", "ERRO");
+                    loDvHspr.style.display = "none";
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO PESQUISAR HISTÓRICO DO PRODUTO", "ERRO");
+                loDvHspr.style.display = "none";
+            }
+        });
+    }
+</script>
+<div class="list-block">
+    <ul>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-input">
+                        <select id="sltPesq" name="sltPesq">
+                            <option value="id_clie" selected="selected">CÓDIGO</option>
+                            <option value="cl_nome">RAZÃO SOCIAL</option>
+                            <option value="cl_cnpj">CNPJ</option>
+                            <option value="id_cida">CIDADE</option>
+                            <option value="cl_fone">TELEFONE</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-input">
+                        <input id="txtPesq" type="text" placeholder="DIGITE O TEXTO DA PESQUISA" />
+                    </div>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+<a id="ahrPesq" href="#" onclick="pesquisaClientes();" class="button button-fill button-raised">PESQUISAR</a>
+<div class="content-block">
+    <div class="buttons-row">
+        <a href="#PsqCli" class="tab-link active button">PESQUISA</a>
+        <a href="#InfCli" class="tab-link button">INFORMAÇÕES</a>
+    </div>
+</div>
+<div class="tabs">
+    <div id="PsqCli" class="tab active">
+        <div id="divTgrd" class="content-block-title">ÚLTIMOS DEZ CLIENTES CADASTRADOS</div>
+        <div id="divPesq" class="content-block"></div>
+    </div>
+    <div id="InfCli" class="tab">
+        <div class="list-block">
+            <ul>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CÓDIGO</div>
+                        <div id="divCodi" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">RAZÃO SOCIAL</div>
+                        <div id="divNome" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">NOME FANTASIA</div>
+                        <div id="divFant" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">ENDEREÇO</div>
+                        <div id="divEnde" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">BAIRRO</div>
+                        <div id="divBair" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CIDADE</div>
+                        <div id="divCida" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CEP</div>
+                        <div id="divNcep" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">REGIÃO</div>
+                        <div id="divRegi" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CNPJ</div>
+                        <div id="divCnpj" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">INSCRIÇÃO ESTADUAL</div>
+                        <div id="divInsc" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CPF</div>
+                        <div id="divNcpf" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">RG</div>
+                        <div id="divNrrg" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">SITE</div>
+                        <div id="divHttp" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">E-MAIL</div>
+                        <div id="divMail" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">TELEFONE</div>
+                        <div id="divFone" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CELULAR</div>
+                        <div id="divCelu" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CONTATO PRINCIPAL</div>
+                        <div id="divComp" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">SEGMENTO</div>
+                        <div id="divSegm" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">FÍSICA / JURÍDICA</div>
+                        <div id="divPfpj" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="align-top">
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-title label">OBSERVAÇÃO</div>
+                            <div class="item-input">
+                                <textarea id="txaObse" readonly="readonly"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="item-divider">ENDEREÇO DE COBRANÇA</li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">ENDEREÇO</div>
+                        <div id="divEndc" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">BAIRRO</div>
+                        <div id="divBaic" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CIDADE</div>
+                        <div id="divCidc" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CEP</div>
+                        <div id="divCepc" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CNPJ</div>
+                        <div id="divCnpc" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">INSCRIÇÃO ESTADUAL</div>
+                        <div id="divIncc" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-divider">ENDEREÇO DE ENTREGA</li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">ENDEREÇO</div>
+                        <div id="divEndt" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">BAIRRO</div>
+                        <div id="divBait" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CIDADE</div>
+                        <div id="divCidt" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CEP</div>
+                        <div id="divCept" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-divider">CONTATOS</li>
+            </ul>
+        </div>
+        <div id="divCont" class="content-block"></div>
+        <div class="list-block">
+            <ul>
+                <li class="item-divider">ÚLTIMOS PRODUTOS COMPRADOS</li>
+            </ul>
+        </div>
+        <div id="divUlpr" class="content-block"></div>
+        <div class="list-block">
+            <ul>
+                <li class="item-divider">HISTÓRICO PRODUTO COMPRADO</li>
+            </ul>
+        </div>
+        <div id="divHspr" class="content-block"></div>
+    </div>
+</div>
+
+<script>
+    var goDvPesq = document.getElementById("divPesq");
+    var goDvTgrd = document.getElementById("divTgrd");
+    var goSlPesq = document.getElementById("sltPesq");
+    var gcIdClie = "";
+
+    $(document).ready(function () {
+        try {
+            gcIdClie = sessionStorage.getItem("lcIdClie").toString();
+
+            if (parseInt(gcIdClie) > 0) { consultaInformacoesCliente(-1); }
+            else { gcIdClie = ""; }
+
+            sessionStorage.removeItem("lcIdClie");
+        }
+        catch (loWkErro) { gcIdClie = ""; }
+
+        pesquisaUltimosDezClientesCadastrados();
+
+        OkTecladoAndroid3("txtPesq", "ahrPesq", "ahrPesq");
+    });
+</script>

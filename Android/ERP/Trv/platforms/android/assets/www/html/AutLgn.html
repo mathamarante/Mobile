@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <link rel="stylesheet" href="../framework7/css/framework7.material.min.css">
+    <link rel="stylesheet" href="../framework7/css/framework7.material.colors.min.css">
+    <link rel="stylesheet" href="../framework7/css/my-app.css">
+    <script>
+        function consultaVendedor() {
+            var lcVdFant = goVdFant.value.toString().toUpperCase().trim();
+            var lcVdSenh = goVdSenh.value.toString().toUpperCase().trim();
+
+            if (lcVdFant == "") {
+                myApp.alert("CAMPO USUÁRIO OBRIGATÓRIO", "ERRO");
+
+                limpaCampos();
+
+                return false;
+            }
+            else if (lcVdSenh == "") {
+                myApp.alert("CAMPO SENHA OBRIGATÓRIO", "ERRO");
+
+                limpaCampos();
+
+                return false;
+            }
+
+            var lcVdSmd5 = md5(lcVdSenh).toUpperCase();
+
+            myApp.showIndicator();
+
+            $.ajax({
+                url: gcWsHttp + "consultaVendedor?lcIdEmpr=TRV&lcVdFant=" + lcVdFant + "&lcVdSmd5=" + lcVdSmd5,
+                type: "GET",
+                dataType: "jsonp",
+                contentType: "application/json; charset=utf-8",
+
+                success: function (loCnVend) {
+                    myApp.hideIndicator();
+                    limpaCampos();
+
+                    try {
+                        if (loCnVend.id_cadt > 0) {
+                            localStorage.setItem("oUCnVend", JSON.stringify(loCnVend));
+                            window.location = "PagLay.html";
+                        }
+                        else {
+                            myApp.alert("USUÁRIO OU SENHA INVALIDOS", "ERRO");
+                        }
+                    }
+                    catch (loWkErro) { myApp.alert("USUÁRIO OU SENHA INVALIDOS", "ERRO"); }
+                },
+                error: function () {
+                    myApp.hideIndicator();
+                    limpaCampos();
+                    myApp.alert("USUÁRIO OU SENHA INVALIDOS", "ERRO");
+                }
+            });
+        }
+
+        function limpaCampos() {
+            goVdFant.value = "";
+            goVdSenh.value = "";
+        }
+
+        function onLoad() { document.addEventListener("deviceready", onDeviceReady, false); }
+
+        function onDeviceReady() { document.addEventListener("backbutton", sair, false); }
+
+        function sair() {
+            navigator.app.exitApp();
+        }
+    </script>
+
+    <style>
+        #divLgin {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+        }
+
+            #divLgin img {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                margin: auto;
+                min-width: 50%;
+                min-height: 50%;
+            }
+    </style>
+</head>
+<body onload="onLoad()" class="theme-green">
+    <div class="views">
+        <div class="view view-main">
+            <div class="page">
+                <div id="divLgin">
+                    <img src="../img/trevao.png">
+                </div>
+                <div class="list-block">
+                    <ul>
+                        <li>
+                            <div class="item-content">
+                                <div class="item-media"><i class="icon icon-form-name"></i></div>
+                                <div class="item-inner">
+                                    <div class="item-title label">USUÁRIO:</div>
+                                    <div class="item-input">
+                                        <input id="txtUsua" type="text" placeholder="DIGITE O USUÁRIO">
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="item-content">
+                                <div class="item-media"><i class="icon icon-form-password"></i></div>
+                                <div class="item-inner">
+                                    <div class="item-title label">SENHA:</div>
+                                    <div class="item-input">
+                                        <input id="txtSenh" type="password" placeholder="DIGITE A SENHA">
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <p class="buttons-row">
+                    <a href="#" onclick="consultaVendedor();" class="button button-fill button-raised">ENTRAR</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="../cordova.js"></script>
+    <script type="text/javascript" src="../framework7/js/framework7.min.js"></script>
+    <script type="text/javascript" src="../framework7/js/my-app.js"></script>
+    <script type="text/javascript" src="../js/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="../js/md5.min.js"></script>
+    <script>
+        var goVdFant = document.getElementById("txtUsua");
+        var goVdSenh = document.getElementById("txtSenh");
+        //var gcWsHttp = "http://localhost/VS2013/ERP/Trv/WebService/Application/Service.svc/";
+        //var gcWsHttp = "http://192.168.5.216/ERP/Trv/WebService/Service.svc/";
+        var gcWsHttp = "http://trevao.clientebasetech.com:6601/WebService/Service.svc/";
+
+        var myApp = new Framework7({
+            material: true
+        });
+    </script>
+</body>
+</html> 

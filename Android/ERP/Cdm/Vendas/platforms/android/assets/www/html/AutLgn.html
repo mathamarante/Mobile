@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <link rel="stylesheet" href="../framework7/css/framework7.material.min.css">
+    <link rel="stylesheet" href="../framework7/css/framework7.material.colors.min.css">
+    <link rel="stylesheet" href="../framework7/css/my-app.css">
+    <script>
+        function validaForm() {
+            var loIdUser = document.getElementById("txtUser");
+            var loUsSenh = document.getElementById("txtSenh");
+            var lcIdUser = loIdUser.value.toString().trim();
+            var lcUsSenh = loUsSenh.value.toString().trim();
+
+            if (lcIdUser == "") {
+                myApp.alert("CAMPO USUÁRIO OBRIGATÓRIO", "ERRO");
+
+                limpaCampos();
+
+                return false;
+            }
+            else if (lcUsSenh == "") {
+                myApp.alert("CAMPO SENHA OBRIGATÓRIO", "ERRO");
+
+                limpaCampos();
+
+                return false;
+            }
+
+            return true;
+        }
+
+        function consultaUsuario() {
+            if (!validaForm()) {
+                return false;
+            }
+
+            var loIdUser = document.getElementById("txtUser");
+            var loUsSenh = document.getElementById("txtSenh");
+            var lcUsSmd5 = md5(loUsSenh.value.toString().toUpperCase().trim()).toUpperCase();
+
+            myApp.showIndicator();
+
+            $.ajax({
+                url: pcWsHttp + "consultaUsuario?lcIdUser=" + loIdUser.value.toString().toUpperCase().trim() + "&lcUsSmd5=" + lcUsSmd5 + "&lcIdEmpr=CDM",
+                type: "GET",
+                dataType: "jsonp",
+                contentType: "application/json; charset=utf-8",
+
+                success: function (loUtUser) {
+                    limpaCampos();
+                    try {
+                        if (loUtUser.id_user == null) {
+                            myApp.alert("USUÁRIO OU SENHA INVALIDOS", "ERRO");
+                        }
+                        else {
+                            localStorage.setItem("oUUtUser", JSON.stringify(loUtUser));
+                            window.location = "PagLay.html";
+                        }
+                    }
+                    catch (loWkErro) {
+                        myApp.alert("USUÁRIO OU SENHA INVALIDOS", "ERRO");
+                    }
+                    myApp.hideIndicator();
+                },
+                error: function () {
+                    myApp.hidePreloader();
+                    limpaCampos();
+                    myApp.alert("USUÁRIO OU SENHA INVALIDOS", "ERRO");
+                }
+            });
+        }
+
+        function limpaCampos() {
+            document.getElementById("txtUser").value = "";
+            document.getElementById("txtSenh").value = "";
+        }
+    </script>
+</head>
+<body>
+    <div class="views">
+        <div class="view view-main">
+            <div class="page">
+                <img src="../img/urso.jpg" style="position: absolute; width: 100%; height: 100%; z-index: -1;">
+                <div class="list-block">
+                    <ul>
+                        <li>
+                            <div class="item-content">
+                                <div class="item-media"><i class="icon icon-form-name"></i></div>
+                                <div class="item-inner">
+                                    <div style="color: white;" class="item-title label">USUÁRIO:</div>
+                                    <div class="item-input">
+                                        <input id="txtUser" style="color: white;" type="text" placeholder="DIGITE O USUÁRIO">
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="item-content">
+                                <div class="item-media"><i class="icon icon-form-password"></i></div>
+                                <div class="item-inner">
+                                    <div style="color: white;" class="item-title label">SENHA:</div>
+                                    <div class="item-input">
+                                        <input id="txtSenh" style="color: white;" type="password" placeholder="DIGITE A SENHA">
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <p class="buttons-row">
+                    <a href="#" onclick="consultaUsuario();" class="button button-fill button-raised">ENTRAR</a>
+                </p>
+                <p class="buttons-row">
+                    <a href="#" onclick="window.location = 'OffLay.html';" class="button button-fill button-raised">TRABALHAR OFFLINE</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="../cordova.js"></script>
+    <script type="text/javascript" src="../framework7/js/framework7.min.js"></script>
+    <script type="text/javascript" src="../framework7/js/my-app.js"></script>
+    <script type="text/javascript" src="../js/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="../js/md5.min.js"></script>
+    <script>
+        //var pcWsHttp = "http://189.8.6.242/WebService/Vendas.svc/";
+        //var pcWsHttp = "http://localhost/VS2013/ERP/Cdm/WebService/Application/Vendas.svc/";
+        var pcWsHttp = "http://69.64.51.0/ERP/Cdm/WebService/Vendas.svc/";
+
+        var myApp = new Framework7({
+            material: true
+        });
+    </script>
+</body>
+</html> 

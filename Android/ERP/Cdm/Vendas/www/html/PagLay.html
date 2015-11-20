@@ -1,0 +1,188 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <link rel="stylesheet" href="../framework7/css/framework7.material.min.css">
+    <link rel="stylesheet" href="../framework7/css/framework7.material.colors.min.css">
+    <link rel="stylesheet" href="../framework7/css/my-app.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <script>
+        function sair() {
+            myApp.confirm("DESEJA SAIR?", "ALERTA", function () {
+                myApp.showIndicator();
+                localStorage.removeItem("oUUtUser");
+                window.location = "AutLgn.html";
+            });
+        }
+
+        function redireciona(lcNmPagi, lcTiPagi) {
+            myApp.showIndicator();
+            $("#divPage").load(lcNmPagi);
+            oUDvTitu.innerHTML = lcTiPagi;
+        }
+
+        function onLoad() { document.addEventListener("deviceready", onDeviceReady, false); }
+
+        function onDeviceReady() { document.addEventListener("backbutton", sair, false); }
+    </script>
+</head>
+<body onload="onLoad()">
+    <div class="statusbar-overlay"></div>
+    <div class="panel-overlay"></div>
+    <div class="panel panel-left panel-cover">
+        <div class="list-block">
+            <ul>
+                <li>
+                    <a href="#" onclick="redireciona('PagIni.html', 'INÍCIO');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/home.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">INÍCIO</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="redireciona('CadCli.html', 'CLIENTES');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/users.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">CLIENTES</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="redireciona('PosFin.html', 'FINANCEIRO');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/money.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">FINANCEIRO</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="redireciona('ConEst.html', 'ESTOQUE');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/boxes.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">ESTOQUE</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="redireciona('PsqPed.html', 'PEDIDOS');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/paper.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">PEDIDOS</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/paper.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">PED. OFFLINE</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/pencil.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">NOVO PEDIDO</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="sair();" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/exit.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">SAIR</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/question.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">SOBRE</div>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="views">
+        <div class="view view-main">
+            <div class="pages navbar-fixed toolbar-fixed">
+                <div class="page">
+                    <div class="navbar">
+                        <div class="navbar-inner">
+                            <div id="divTitu" class="center"></div>
+                        </div>
+                    </div>
+                    <div class="toolbar">
+                        <div class="toolbar-inner">
+                            <a href="#" data-panel="left" class="link icon-only open-panel">
+                                <i class="icon icon-bars"></i>
+                                <span>MENU</span>
+                            </a>
+                            <a href="#" class="link">
+                                <img src="../img/user.png" />
+                                &nbsp;
+                                <span id="spnUsua"></span>
+                            </a>
+                        </div>
+                    </div>
+                    <div id="divPage" class="page-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../cordova.js"></script>
+    <script type="text/javascript" src="../framework7/js/framework7.min.js"></script>
+    <script type="text/javascript" src="../framework7/js/my-app.js"></script>
+    <script type="text/javascript" src="../js/jquery-2.1.4.min.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+        var cUIdUser;
+        var oUDvTitu = document.getElementById("divTitu");
+        //var pcWsHttp = "http://189.8.6.242/WebService/Vendas.svc/";
+        //var pcWsHttp = "http://localhost/VS2013/ERP/Cdm/WebService/Application/Vendas.svc/";
+        var pcWsHttp = "http://69.64.51.0/ERP/Cdm/WebService/Vendas.svc/";
+
+        var myApp = new Framework7({
+            material: true
+        });
+
+        $(document).ready(function () {
+            var oUUtUser = JSON.parse(localStorage.getItem("oUUtUser"));
+
+            cUIdUser = oUUtUser.id_user.trim();
+
+            oUDvTitu.innerHTML = "INÍCIO";
+            document.getElementById("spnUsua").innerHTML = cUIdUser;
+
+            $("#divPage").load("PagIni.html");
+        });
+    </script>
+</body>
+</html> 

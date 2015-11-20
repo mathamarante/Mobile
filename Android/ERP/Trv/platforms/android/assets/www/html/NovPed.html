@@ -1,0 +1,727 @@
+﻿<script>
+    function pesquisaClientes() {
+        goSlClie.disabled = true;
+
+        $("#sltClie").html("<option value='0'>CARREGANDO CLIENTES...</option>").show();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone:IsNull=True",
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmPqClie) {
+                try {
+                    if (lmPqClie.length > 0) {
+                        goSlClie.disabled = false;
+                        var lcPqClie = "<option value='0'>LISTA DE CLIENTES</option>";
+
+                        for (var x = 0; x < lmPqClie.length; x++) { lcPqClie += "<option value='" + lmPqClie[x].id_clie + "'>" + lmPqClie[x].cl_nome + "</option>"; }
+
+                        $("#sltClie").html(lcPqClie).show();
+                    }
+                    else {
+                        $("#sltClie").html("<option value='0'>NENHUM CLIENTE ENCONTRADO</option>").show();
+                    }
+                }
+                catch (loWkErro) {
+                    $("#sltClie").html("<option value='0'>ERRO AO PESQUISAR CLIENTES</option>").show();
+                }
+            },
+            error: function () {
+                $("#sltClie").html("<option value='0'>ERRO AO PESQUISAR CLIENTES</option>").show();
+            }
+        });
+    }
+
+    function consultaInformacoesCliente() {
+        goTxCfab.focus();
+
+        if (goNrIdcl.value == 0) {
+            limpaCamposCliente();
+            return;
+        }
+        else if (goNrIdcl.value >= 1) { }
+        else {
+            limpaCamposCliente();
+            myApp.alert("CÓDIGO DO CLIENTE INVÁLIDO", "ERRO");
+
+            return;
+        }
+
+        try {
+            goSlClie.value = goNrIdcl.value;
+
+            if (goSlClie.options[goSlClie.selectedIndex].innerHTML == "") {
+                limpaCamposCliente();
+                myApp.alert("CLIENTE NÃO ENCONTRADO", "ALERTA");
+            }
+        }
+        catch (loWkErro) {
+            limpaCamposCliente();
+            myApp.alert("CLIENTE NÃO ENCONTRADO", "ALERTA");
+        }
+    }
+
+    function limpaCamposCliente() {
+        goNrIdcl.value = "";
+        goSlClie.value = 0;
+    }
+
+    function consultaProduto() {
+        var lcTxCfab = goTxCfab.value.toString().trim().toUpperCase();
+
+        if (lcTxCfab == "") { return; }
+
+        $.ajax({
+            url: pcWsHttp + "consultaProduto?lcIdEmpr=TRV&lcDmCfab=" + lcTxCfab,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmCnProd) {
+                try {
+                    if (lmCnProd.length > 0) {
+                        goTxCfab.value = lcTxCfab;
+                        goDvDeno.innerHTML = lmCnProd[0].dm_deno;
+
+                        if (lmCnProd[0].qt_sald < 0) { goDvQtes.innerHTML = 0; }
+                        else { goDvQtes.innerHTML = lmCnProd[0].qt_sald; }
+
+                        goNrPrun.value = lmCnProd[0].dm_pvar;
+                        gnDmPvar = lmCnProd[0].dm_pvar;
+                        gnWkPrun = lmCnProd[0].dm_pvar;
+
+                        goNrPdes.value = "";
+                        gnDmPdes = lmCnProd[0].dm_pdes;
+
+                        gnDmQemb = lmCnProd[0].dm_qemb;
+                        gnDmQtpr = lmCnProd[0].dm_qtpr;
+                        gnDmProm = lmCnProd[0].dm_prom;
+
+                        mateSaldo(lmCnProd[0].id_dmat.toString().trim());
+
+                        consultaValorUltimaVenda(lmCnProd[0].id_dmat.toString().trim())
+                    }
+                    else {
+                        limpaCamposProduto();
+                        myApp.alert("NENHUM PRODUTO ENCONTRADO", "ALERTA");
+                    }
+                }
+                catch (loWkErro) {
+                    limpaCamposProduto();
+                    myApp.alert("NENHUM PRODUTO ENCONTRADO", "ALERTA");
+                }
+            },
+            error: function () {
+                limpaCamposProduto();
+                myApp.alert("NENHUM PRODUTO ENCONTRADO", "ALERTA");
+            }
+        });
+    }
+
+    function mateSaldo(lcPaDmat) {
+        $.ajax({
+            url: pcWsHttp + "mateSaldo?lcIdEmpr=TRV&lcPaData=" + goDvData.innerHTML + "&lcPaAlmx=" + 1 + "&lcPaDmat=" + lcPaDmat,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lnMpQtes) {
+                try { consultaQuantidadeSeparada(lcPaDmat, lnMpQtes); }
+                catch (loWkErro) { myApp.alert("ERRO AO CALCULAR SALDO EM ESTOQUE", "ERRO"); }
+            },
+            error: function () { myApp.alert("ERRO AO CALCULAR SALDO EM ESTOQUE", "ERRO"); }
+        });
+    }
+
+    function consultaQuantidadeSeparada(lcIdDmat, lnMpQtes) {
+        $.ajax({
+            url: pcWsHttp + "consultaQuantidadeSeparada?lcIdEmpr=TRV&lcIdDmat=" + lcIdDmat,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lnMpQtde) {
+                try { goDvQtes.innerHTML = (lnMpQtes - lnMpQtde).toString().trim(); }
+                catch (loWkErro) { myApp.alert("ERRO AO CONSULTAR QUANTIDADE SEPARADA", "ERRO"); }
+            },
+            error: function () { myApp.alert("ERRO AO CONSULTAR QUANTIDADE SEPARADA", "ERRO"); }
+        });
+    }
+
+    function verificaQuantidade() {
+        var lnWkRest = 0;
+
+        if (gnDmQemb > 1) {
+            lnWkRest = goNrQtde.value % gnDmQemb;
+
+            if (lnWkRest > 0) {
+                if (lnWkRest > (gnDmQemb / 2)) {
+                    goNrQtde.value = parseFloat(goNrQtde.value) + (gnDmQemb - lnWkRest);
+                    myApp.alert("PRODUTO VENDIDO EM EMBALAGEM DE " + gnDmQemb.toString().trim() + " UNIDADES, FOI ADICIONADO " + (gnDmQemb - lnWkRest).toString().trim(), "ALERTA");
+                }
+                else {
+                    goNrQtde.value = goNrQtde.value - lnWkRest;
+
+                    if (goNrQtde.value == 0) {
+                        goNrQtde.value = gnDmQemb;
+                        myApp.alert("PRODUTO VENDIDO EM EMBALAGEM DE " + gnDmQemb.toString().trim() + " UNIDADES", "ALERTA");
+                    }
+                    else { myApp.alert("PRODUTO VENDIDO EM EMBALAGEM DE " + gnDmQemb.toString().trim() + " UNIDADES, FOI SUBTRAÍDO " + lnWkRest.toString().trim(), "ALERTA"); }
+                }
+            }
+        }
+
+        gnWkPrun = gnDmPvar;
+
+        if (gnDmQtpr > 0 && parseFloat(goNrQtde.value) >= gnDmQtpr) {
+            gnWkPrun = gnDmProm;
+            goNrPrun.value = gnDmProm;
+            myApp.alert("PRODUTO EM PROMOÇÃO " + brMoney(gnDmProm.toString().trim()), "ALERTA");
+        }
+        else if (goNrPrun.value < gnDmPvar) {
+            goNrPrun.value = gnDmPvar;
+        }
+    }
+
+    function verificaPreco() {
+        if (parseFloat(goNrPrun.value) < gnWkPrun) {
+            goNrPrun.value = gnWkPrun;
+
+            myApp.alert("VALOR NÃO AUTORIZADO, INFERIOR AO VALOR DE TABELA", "ALERTA");
+        }
+    }
+
+    //function calculaPrecoComDesconto() {
+    //    lnWkPrun = gnDmPvar * ((100 - goNrPdes.value) / 100);
+
+    //    if (lnWkPrun > 0 && lnWkPrun <= gnDmPvar) { goNrPrun.value = lnWkPrun.toFixed(2); }
+    //    else { goNrPrun.value = ""; }
+    //}
+
+    //function calculaPercentualDesconto() {
+    //    lnWkPdes = (1 - goNrPrun.value / gnDmPvar) * 100;
+
+    //    if (lnWkPdes > 0 && lnWkPdes < 100) { goNrPdes.value = lnWkPdes.toFixed(2); }
+    //    else { goNrPdes.value = ""; }
+    //}
+
+    function consultaValorUltimaVenda(lcIdDmat) {
+        var lcIdClie = goNrIdcl.value.toString().trim();
+
+        if (lcIdClie == "") { return; }
+
+        $.ajax({
+            url: pcWsHttp + "consultaValorUltimaVenda?lcIdEmpr=TRV&lcIdDmat=" + lcIdDmat + "&lcIdClie=" + lcIdClie,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lnMpPrun) {
+                try {
+                    if (lnMpPrun > 0) { goDvUvda.innerHTML = brMoney(lnMpPrun.toString().trim()); }
+                    else { goDvUvda.innerHTML = ""; }
+                }
+                catch (loWkErro) { myApp.alert("ERRO AO CONSULTAR PREÇO DA ÚLTIMA VENDA", "ERRO"); }
+            },
+            error: function () { myApp.alert("ERRO AO CONSULTAR PREÇO DA ÚLTIMA VENDA", "ERRO"); }
+        });
+    }
+
+    function limpaCamposProduto() {
+        goTxCfab.value = "";
+        goDvDeno.innerHTML = "";
+        goNrQtde.value = "";
+        goDvQtes.innerHTML = "";
+        goNrPrun.value = "";
+        goNrPdes.value = "";
+        goDvUvda.innerHTML = "";
+
+        gnDmPdes = 100;
+        gnDmPvar = 0;
+        gnDmQemb = 0;
+        gnDmQtpr = 0;
+        gnDmProm = 0;
+        gnWkPrun = 0
+    }
+
+    function adicionaProdutoPedido() {
+        if (goNrIdcl.value > 0) { }
+        else {
+            myApp.alert("CÓDIGO DO CLIENTE INVÁLIDO", "ERRO");
+
+            return;
+        }
+
+        if (goTxCfab.value.toString().trim() == "") {
+            myApp.alert("CÓDIGO DO FABRICANTE INVÁLIDO", "ERRO");
+
+            return;
+        }
+
+        if (goNrQtde.value > 0) { }
+        else {
+            myApp.alert("QUANTIDADE INVÁLIDA", "ERRO");
+
+            return;
+        }
+
+        if (goNrPrun.value > 0) { }
+        else {
+            myApp.alert("PREÇO INVÁLIDO", "ERRO");
+
+            return;
+        }
+
+        if (parseFloat(goNrPdes.value) > gnDmPdes) {
+            myApp.alert("DESCONTO ACIMA DO AUTORIZADO", "ALERTA");
+            goNrPdes.value = "";
+
+            return;
+        }
+
+        if (goNrPdes.value > 0 && parseFloat(goNrQtde.value) > parseFloat(goDvQtes.innerHTML)) {
+            goNrPdes.value = "";
+
+            myApp.alert("PRODUTO COMPRA NA PRAÇA % DESCONTO ZERO", "ERRO");
+
+            return;
+        }
+
+
+        if (document.getElementById("div" + goTxCfab.value.toString().trim())) {
+            goTxCfab.focus();
+
+            return;
+        }
+
+        document.getElementById("divCabe").style.display = "";
+
+        var lcPdMvpr = "";
+
+        lcPdMvpr = $("#divMvpr").html();
+
+        lcPdMvpr += "<div id='div" + goTxCfab.value.toString().trim() + "' class='row no-gutter pedimvpr'>";
+        lcPdMvpr += "<div class='col-auto'>" + goTxCfab.value.toString().trim() + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + goNrQtde.value.toString().trim() + "<span style='display: none;'>" + goDvQtes.innerHTML.trim() + "</span></div>";
+        lcPdMvpr += "<div class='col-auto'>" + brMoney(goNrPrun.value.toString().trim()) + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + brMoney(goNrQtde.value * goNrPrun.value) + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + brDecimal(goNrPdes.value) + "</div>";
+        lcPdMvpr += "<div class='col-auto'><a href='#' onclick='removeProdutoPedido(\"" + goTxCfab.value.toString().trim() + "\")' class='button button-fill color-red'>REMOVER</a></div>";
+        lcPdMvpr += "</div>";
+
+        $("#divMvpr").html(lcPdMvpr).show();
+
+        calculaTotal();
+
+        goTxCfab.focus();
+    }
+
+    function removeProdutoPedido(lcDmCfab) {
+        $("#div" + lcDmCfab).remove();
+
+        if ($("#divMvpr > div").length <= 1) { document.getElementById("divCabe").style.display = "none"; }
+
+        calculaTotal();
+    }
+
+    function calculaTotal() {
+        var lnToPeca = 0, lnVlDesc = 0, lnClTota = 0, lnClPdes = 0, lnVlFret = 0, lnPeTota = 0;
+
+        lnVlFret = parseFloat(goNrFret.value.replace("R$ ", "").split(".").join("").replace(",", "."));
+
+        if (lnVlFret > 0) { }
+        else { lnVlFret = 0; }
+
+        $("#divMvpr > div").each(function () {
+            if (this.id != "divCabe") {
+                lnClTota = parseFloat($("#" + this.id + " > div")[3].innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."));
+                lnClPdes = parseFloat($("#" + this.id + " > div")[4].innerHTML.split(".").join("").replace(",", "."));
+
+                lnToPeca += lnClTota;
+                lnVlDesc += lnClTota * (lnClPdes / 100);
+            }
+        });
+
+        lnPeTota = lnToPeca - lnVlDesc + lnVlFret;
+
+        if (lnToPeca > 0) {
+            goDvTpec.innerHTML = brMoney(lnToPeca);
+            goDvVdes.innerHTML = brMoney(lnVlDesc);
+            goDvTota.innerHTML = brMoney(lnPeTota);
+        }
+        else {
+            goDvTpec.innerHTML = "";
+            goDvVdes.innerHTML = "";
+
+            if (lnVlFret > 0) { goDvTota.innerHTML = brMoney(lnVlFret); }
+            else { goDvTota.innerHTML = ""; }
+        }
+    }
+
+    function pesquisaTransportadoras() {
+        goSlTran.disabled = true;
+
+        $("#sltTran").html("<option value='0'>CARREGANDO TRANSPORTADORAS...</option>").show();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaTransportadoras?lcIdEmpr=TRV",
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmPqTran) {
+                try {
+                    if (lmPqTran.length > 0) {
+                        var lcPqTran = "<option value='0'></option>";
+
+                        for (var x = 0; x < lmPqTran.length; x++) { lcPqTran += "<option value='" + lmPqTran[x].id_tran + "/" + lmPqTran[x].tr_vfre + "'>" + lmPqTran[x].tr_nome + "</option>"; }
+
+                        $("#sltTran").html(lcPqTran).show();
+
+                        goSlTran.disabled = false;
+                    }
+                    else { $("#sltTran").html("<option value='0'>NENHUMA TRANSPORTADORA ENCONTRADA...</option>").show(); }
+                }
+                catch (loWkErro) { $("#sltTran").html("<option value='0'>ERRO AO PESQUISAR TRANSPORTADORAS...</option>").show(); }
+            },
+            error: function () { $("#sltTran").html("<option value='0'>ERRO AO PESQUISAR TRANSPORTADORAS...</option>").show(); }
+        });
+    }
+
+    function consultaValorFrete() {
+        var lmSlTran = goSlTran.value.split("/");
+
+        if (parseFloat(lmSlTran[1]) > 0) { goNrFret.value = brMoney(lmSlTran[1]); }
+        else { goNrFret.value = ""; }
+
+        calculaTotal();
+    }
+
+    function geraOrdemSeparacao() {
+        if (goNrIdcl.value > 0) { }
+        else {
+            myApp.alert("CÓDIGO DO CLIENTE INVÁLIDO", "ERRO");
+
+            return;
+        }
+
+        if (goDvTota.innerHTML.trim() == "") {
+            myApp.alert("PEDIDO SEM PRODUTOS", "ERRO");
+
+            return;
+        }
+
+        var lnWkQtes = 0, lnWkQtde = 0, lnPeQtde = 0;
+        var llFlRtrn = false;
+
+        $("#divMvpr > div").each(function () {
+            if (this.id != "divCabe") {
+                lnWkQtes = parseInt($("#" + this.id + " > div > span")[0].innerHTML);
+                lnWkQtde = parseInt($("#" + this.id + " > div")[1].innerHTML.replace(/(^\d+)(.+$)/i, '$1'));
+                lnPeQtde += lnWkQtde;
+
+                if (lnWkQtde > lnWkQtes && parseInt(goSlTpsa.value) != 4) {
+                    myApp.alert("ITENS COM ESTOQUE INSUFICIENTE, ESCOLHA COMPRA NA PRAÇA", "ERRO");
+
+                    llFlRtrn = true;
+                }
+
+                if (lnWkQtde <= lnWkQtes && parseInt(goSlTpsa.value) == 4) {
+                    myApp.alert("ITENS COM ESTOQUE, NÃO PERMITIDO COMPRA NA PRAÇA", "ERRO");
+
+                    llFlRtrn = true;
+                }
+            }
+        });
+
+        if (llFlRtrn) { return; }
+
+        consultaInformacoesPreInsercao(lnPeQtde);
+    }
+
+    function consultaInformacoesPreInsercao(lnPeQtde) {
+        var lcIdClie = goNrIdcl.value.toString().trim();
+        var lcPePdes = ((parseFloat(goDvVdes.innerHTML.replace("R$ ", "").split(".").join("").replace(",", ".")) / parseFloat(goDvTpec.innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."))) * 100).toFixed(2).toString();
+
+        $.ajax({
+            url: pcWsHttp + "consultaInformacoesPreInsercao?lcIdEmpr=TRV&lcIdClie=" + lcIdClie + "&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcPeOrse=" + parseInt(goSlTpsa.value) + "&lcPePdes=" + lcPePdes,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (loPrInse) {
+                inserePedido(loPrInse, lnPeQtde);
+            },
+            error: function () { myApp.alert("ERRO AO PRÉ INSERIR PEDIDO", "ERRO"); }
+        });
+    }
+
+    function inserePedido(loPrInse, lnPeQtde) {
+        var lcIdClie = goNrIdcl.value.toString().trim();
+        var lcPePdes = ((parseFloat(goDvVdes.innerHTML.replace("R$ ", "").split(".").join("").replace(",", ".")) / parseFloat(goDvTpec.innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."))) * 100).toFixed(2).toString().replace(".", ",");
+        var lcPeTota = goDvTota.innerHTML.replace("R$ ", "").split(".").join("");
+        var lcPeFret = goNrFret.value.replace("R$ ", "").split(".").join("");
+        var lcPePcom = "0", lcPePcot = "0", lcPeVdpr = "0", lcPeTlpr = "0";
+        var lmSlTran = goSlTran.value.split("/");
+
+        if (loPrInse.pe_pcom > 0) { lcPePcom = loPrInse.pe_pcom.toString().trim(); }
+        if (loPrInse.pe_pcot > 0) { lcPePcot = loPrInse.pe_pcot.toString().trim(); }
+        if (loPrInse.pe_vdpr > 0) { lcPeVdpr = loPrInse.pe_vdpr.toString().trim(); }
+        if (loPrInse.pe_tlpr > 0) { lcPeTlpr = loPrInse.pe_tlpr.toString().trim(); }
+
+        $.ajax({
+            url: pcWsHttp + "inserePedido?lcIdEmpr=TRV&lcIdClie=" + lcIdClie + "&lcIdTran=" + lmSlTran[0].toString().trim() + "&lcIdFili=1&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcPeQtde=" + lnPeQtde.toString().trim() + "&lcPeTota=" + lcPeTota + "&lcPeFret=" + lcPeFret + "&lcPeOrse=" + goSlTpsa.value.toString().trim() + "&lcPePdes=" + lcPePdes + "&lcPePdcp=" + goTxPdcp.value.toString().trim() + "&lcPeObse=" + goTaObse.value.toString().trim() + "&lcIdPedi=" + loPrInse.id_pedi + "&lcIdSitu=" + loPrInse.id_situ + "&lcPeNume=" + loPrInse.pe_nume + "&lcPePcom=" + lcPePcom + "&lcPePcot=" + lcPePcot + "&lcPeVdpr=" + lcPeVdpr + "&lcPeTlpr=" + lcPeTlpr + "&lcClVend=" + loPrInse.cl_vend.toString().trim() + "&lcP2Nume=" + loPrInse.p2_nume.toString().trim() + "&lcPeOpid=" + loPrInse.pe_opid.toString().trim(),
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (llNvPedi) {
+                if (llNvPedi) {
+                    limpaCampos();
+
+                    myApp.alert("PEDIDO INSERIDO COM SUCESSO", "SUCESSO");
+                }
+                else { myApp.alert("ERRO AO INSERIR PEDIDO", "ERRO"); }
+            },
+            error: function () { myApp.alert("ERRO AO INSERIR PEDIDO", "ERRO"); }
+        });
+    }
+
+    function limpaCampos() {
+        limpaCamposCliente();
+        limpaCamposProduto();
+
+        goSlTpsa.value = 1;
+        goSlTran.value = 0;
+        goNrFret.value = "";
+        goTxPdcp.value = "";
+        goTaObse.value = "";
+
+        $("#divMvpr > div").each(function () {
+            if (this.id != "divCabe") { removeProdutoPedido($("#" + this.id + " > div")[0].innerHTML.trim()); }
+        });
+    }
+
+    //@ sourceURL=NovPed1.js
+</script>
+<div class="list-block">
+    <ul>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">DATA PEDIDO</div>
+                <div id="divData" class="item-after"></div>
+            </div>
+        </li>
+        <li class="item-divider">CLIENTE</li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">CÓD. CLIENTE</div>
+                    <div class="item-input">
+                        <input id="numIdcl" type="number" min="1" step="1" placeholder="DIGITE O CÓDIGO DO CLIENTE" onblur="consultaInformacoesCliente();" onfocus="limpaCamposCliente();">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-input">
+                        <select id="sltClie" disabled="disabled" style="" onchange="if (this.value >= 1) { goNrIdcl.value = this.value; } else { limpaCamposCliente(); }"></select>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="item-divider">PRODUTO</li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">CÓD. FABR.</div>
+                    <div class="item-input">
+                        <input id="txtCfab" type="text" placeholder="DIGITE O CÓDIGO DO FABRICANTE" onblur="consultaProduto();" onfocus="limpaCamposProduto();" />
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div id="divDeno" class="item-after" style="margin-left: auto;"></div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">QTDE</div>
+                    <div class="item-input">
+                        <input id="numQtde" type="number" min="0.01" placeholder="DIGITE O QUANTIDADE DO PRODUTO( EX: 9999,99 )" onblur="verificaQuantidade();">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">ESTOQUE</div>
+                <div id="divQtes" class="item-after"></div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">PR. UNIT.</div>
+                    <div class="item-input">
+                        <input id="numPrun" type="number" min="0.01" placeholder="DIGITE O PREÇO DO PRODUTO( EX: 9999,99 )" onblur="verificaPreco();"> <!--onkeyup="calculaPercentualDesconto();"-->
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">% DESC.</div>
+                    <div class="item-input">
+                        <input id="numPdes" type="number" min="0.01" max="99.99" placeholder="DIGITE A % DESCONTO DO PRODUTO( EX: 99,99 )"> <!--onkeyup="calculaPrecoComDesconto();"-->
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">VLR ULT. VDA</div>
+                <div id="divUvda" class="item-after"></div>
+            </div>
+        </li>
+    </ul>
+</div>
+<a href="#" id="ahrAdic" onclick="adicionaProdutoPedido();" class="button button-fill button-raised">ADICIONAR PRODUTO</a>
+<div id="divMvpr" class="content-block">
+    <div id="divCabe" style="display: none;" class="row no-gutter">
+        <div class='col-auto'><b>CÓD. FABR.</b></div>
+        <div class='col-auto'><b>QTDE</b></div>
+        <div class='col-auto'><b>PR. UNIT.</b></div>
+        <div class='col-auto'><b>TOTAL</b></div>
+        <div class='col-auto'><b>% DESC.</b></div>
+        <div class='col-auto'></div>
+    </div>
+</div>
+<div class="list-block">
+    <ul>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">TOTAL PEÇAS</div>
+                <div id="divTpec" class="item-after"></div>
+            </div>
+        </li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">DESCONTO</div>
+                <div id="divVdes" class="item-after"></div>
+            </div>
+        </li>
+        <li class="item-divider">ORDEM DE SEPARAÇÃO</li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-input">
+                        <select id="sltTpsa">
+                            <option value="1" selected="selected">BALCÃO FRENTE</option>
+                            <option value="2">ENTREGA</option>
+                            <option value="3">EXPEDIÇÃO</option>
+                            <option value="4">COMPRA NA PRAÇA</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">TRANSPORTADORA</div>
+                    <div class="item-input">
+                        <select id="sltTran" onchange="consultaValorFrete();" onblur="consultaValorFrete();"></select>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">VLR FRETE</div>
+                    <div class="item-input">
+                        <input id="numFret" type="number" min="0.01" placeholder="DIGITE O VALOR DO FRETE( EX: 9999,99 )" onkeyup="calculaTotal();">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">PED. COMPRA</div>
+                    <div class="item-input">
+                        <input id="txtPdcp" type="text" placeholder="DIGITE O PEDIDO DE COMPRA" />
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="align-top">
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">OBSERVAÇÃO</div>
+                    <div class="item-input">
+                        <textarea id="txaObse" placeholder="DIGITE A OBSERVAÇÃO DO PEDIDO"></textarea>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">TOTAL</div>
+                <div id="divTota" class="item-after"></div>
+            </div>
+        </li>
+    </ul>
+</div>
+<a href="#" id="ahrGera" onclick="geraOrdemSeparacao();" class="button button-fill button-raised">GERAR</a>
+<br />
+<script>
+    var goNrIdcl = document.getElementById("numIdcl");
+    var goDvData = document.getElementById("divData");
+    var goSlClie = document.getElementById("sltClie");
+    var goDvDeno = document.getElementById("divDeno");
+    var goNrQtde = document.getElementById("numQtde");
+    var goDvQtes = document.getElementById("divQtes");
+    var goNrPrun = document.getElementById("numPrun");
+    var goNrPdes = document.getElementById("numPdes");
+    var goDvUvda = document.getElementById("divUvda");
+    var goTxCfab = document.getElementById("txtCfab");
+    var goDvCabe = document.getElementById("divCabe");
+    var goDvTpec = document.getElementById("divTpec");
+    var goDvVdes = document.getElementById("divVdes");
+    var goDvTota = document.getElementById("divTota");
+    var goSlTran = document.getElementById("sltTran");
+    var goNrFret = document.getElementById("numFret");
+    var goSlTpsa = document.getElementById("sltTpsa");
+    var goTxPdcp = document.getElementById("txtPdcp");
+    var goTaObse = document.getElementById("txaObse");
+    var ldDtHoje = new Date();
+    var gnDmPdes = 100, gnDmPvar = 0, gnDmQemb = 0, gnDmQtpr = 0, gnDmProm = 0, gnWkPrun = 0;
+
+    $(document).ready(function () {
+        goDvData.innerHTML = objetoDataParaStringData(ldDtHoje);
+
+        OkTecladoAndroid2("numIdcl", "sltClie");
+        OkTecladoAndroid2("txtCfab", "numQtde");
+        OkTecladoAndroid2("numQtde", "numPrun");
+        OkTecladoAndroid2("numPrun", "numPdes");
+        OkTecladoAndroid3("numPdes", "ahrAdic", "ahrAdic");
+        OkTecladoAndroid2("numFret", "txtPdcp");
+        OkTecladoAndroid2("txtPdcp", "txaObse");
+        OkTecladoAndroid3("txaObse", "ahrGera", "ahrGera");
+
+        pesquisaClientes();
+        pesquisaTransportadoras();
+    });
+
+    //@ sourceURL=NovPed2.js
+</script>

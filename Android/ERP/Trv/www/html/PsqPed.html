@@ -1,0 +1,478 @@
+﻿<script>
+    function pesquisaPedidos() {
+        var loLiRank = document.getElementById("lliRank");
+        var lcSlPesq = goSlPesq.value.toString().trim(), lcWsHttp = "", lcIdVend = poCnVend.id_vend.toString().trim();
+
+        myApp.showTab("#PsqPed");
+
+        if (lcSlPesq == "acertados") {
+            if (htmlDataParaObjetoData(goDtInic.value) > htmlDataParaObjetoData(goDtFina.value)) {
+                myApp.alert("DATA INICIAL MAIOR QUE DATA FINAL", "ERRO");
+
+                return;
+            }
+            else if (htmlDataParaObjetoData(goDtInic.value) < gdMsAnte) {
+                myApp.alert("DATA INICIAL MENOR QUE ÚLTIMOS 3 MESES", "ERRO");
+
+                return;
+            }
+            else if (htmlDataParaObjetoData(goDtFina.value) > gdDtHoje) {
+                myApp.alert("DATA FINAL MAIOR QUE DATA ATUAL", "ERRO");
+
+                return;
+            }
+
+            consultaRankingVendedor();
+
+            lcWsHttp = pcWsHttp + "pesquisaPedidos?lcIdEmpr=TRV&lcIdVend=" + lcIdVend + "&lcPeAcer=1&lcDtInic=" + goDtInic.value.toString().trim() + "&lcDtFina=" + goDtFina.value.toString().trim();
+            loLiRank.style.display = "";
+        }
+        else {
+            lcWsHttp = pcWsHttp + "pesquisaPedidos?lcIdEmpr=TRV&lcIdVend=" + lcIdVend + "&lcPeAcer=0&lcDtInic:IsNull=True&lcDtFina:IsNull=True";
+            loLiRank.style.display = "none";
+        }
+
+        myApp.showIndicator();
+
+        $.ajax({
+            url: lcWsHttp,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmPqPedi) {
+                try {
+                    if (lmPqPedi.length > 0) {
+                        var lcPqPedi = "";
+                        var lnVdTota = 0;
+
+                        lcPqPedi += "<div class='row no-gutter'>";
+                        lcPqPedi += "<div class='col-auto'><b>NR. PED.</b></div>";
+                        lcPqPedi += "<div class='col-auto'><b>R. SOCIAL</b></div>";
+                        lcPqPedi += "<div class='col-auto'><b>DATA</b></div>";
+
+                        if (lcSlPesq == "acertados") {
+                            lcPqPedi += "<div class='col-auto'><b>DT ACERTO</b></div>";
+                        }
+
+                        lcPqPedi += "<div class='col-auto'><b>VALOR</b></div>";
+                        lcPqPedi += "</div>";
+
+                        var lnPeTota = 0;
+
+                        for (var x = 0; x < lmPqPedi.length; x++) {
+                            if (isNaN(lmPqPedi[x].tp_tota - lmPqPedi[x].tp_devl)) {
+                                lnPeTota = 0;
+                            }
+                            else {
+                                lnPeTota = lmPqPedi[x].tp_tota - lmPqPedi[x].tp_devl;
+                            }
+
+                            lcPqPedi += "<div onclick='consultaPedido(" + x + ", " + lnPeTota + ");' class='row no-gutter'>";
+                            lcPqPedi += "<div id='divPen" + x.toString().trim() + "' class='col-auto'>" + lmPqPedi[x].pe_nume + "</div>";
+                            lcPqPedi += "<div class='col-auto'>" + lmPqPedi[x].cl_nome + "</div>";
+                            lcPqPedi += "<div class='col-auto'>" + jsonDate(lmPqPedi[x].pe_data) + "</div>";
+
+                            if (lcSlPesq == "acertados") {
+                                lcPqPedi += "<div class='col-auto'>" + escondeDataZerada(jsonDate(lmPqPedi[x].pe_dtac)) + "</div>";
+                            }
+
+                            lcPqPedi += "<div class='col-auto'>" + brMoney(lmPqPedi[x].tp_tota - lmPqPedi[x].tp_devl) + "</div>";
+                            lcPqPedi += "</div>";
+
+                            lnVdTota += lmPqPedi[x].tp_tota - lmPqPedi[x].tp_devl;
+                        }
+
+                        goDvTota.innerHTML = brMoney(lnVdTota);
+
+                        $("#divPesq").html(lcPqPedi).show();
+                    }
+                    else {
+                        myApp.alert("NENHUM PEDIDO ENCONTRADO", "ALERTA");
+                        limpaCamposPesquisa();
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR PEDIDOS", "ERRO");
+                    limpaCamposPesquisa();
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO PESQUISAR PEDIDOS", "ERRO");
+                limpaCamposPesquisa();
+            }
+        });
+    }
+
+    function mostraPesquisaAcertados() {
+        var loLiDtde = document.getElementById("lliDtde");
+        var loLiDtat = document.getElementById("lliDtat");
+
+        if (goSlPesq.value.toString().trim() == "acertados") {
+            loLiDtde.style.display = "";
+            loLiDtat.style.display = "";
+        }
+        else {
+            loLiDtde.style.display = "none";
+            loLiDtat.style.display = "none";
+        }
+    }
+
+    function consultaRankingVendedor() {
+        $.ajax({
+            url: pcWsHttp + "pesquisaRankingVendedores?lcIdEmpr=TRV&lcDtInic=" + goDtInic.value.toString().trim() + "&lcDtFina=" + goDtFina.value.toString().trim(),
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmPqRank) {
+                try {
+                    if (lmPqRank.length > 0) {
+                        var lnPsRank = 1;
+
+                        for (var x = 0; x < lmPqRank.length; x++) {
+                            if (lmPqRank[x].cl_vend == poCnVend.id_vend) { break; }
+
+                            lnPsRank++;
+                        }
+
+                        goDvRank.innerHTML = lnPsRank.toString().trim() + "º";
+                    }
+                    else {
+                        goDvRank.innerHTML = "";
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR RANKING DE VENDEDORES", "ERRO");
+                    goDvRank.innerHTML = "";
+                }
+            },
+            error: function () {
+                myApp.alert("ERRO AO PESQUISAR RANKING DE VENDEDORES", "ERRO");
+                goDvRank.innerHTML = "";
+            }
+        });
+    }
+
+    function limpaCamposPesquisa() {
+        document.getElementById("divPesq").style.display = "none";
+        goDvRank.innerHTML = "";
+        goDvTota.innerHTML = "";
+        goDtInic.valueAsDate = gdSmAnte;
+        goDtFina.valueAsDate = gdDtHoje;
+    }
+
+    function consultaPedido(lnNrLinh, lnPeTota) {
+        var lcPeNume = document.getElementById("divPen" + lnNrLinh).innerHTML.trim();
+
+        pesquisaProdutosPedido(lcPeNume);
+
+        myApp.showTab("#DetPed");
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "consultaPedido?lcIdEmpr=TRV&lcPeNume=" + lcPeNume,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (loCnPedi) {
+                try {
+                    var lcClFone = loCnPedi[0].cl_fone.trim();
+
+                    if (lcClFone == "") { lcClFone = loCnPedi[0].cl_celu.trim(); }
+
+                    goDvPenr.innerHTML = loCnPedi[0].pe_nume;
+                    goDvIdcl.innerHTML = loCnPedi[0].id_clie;
+                    goDvNome.innerHTML = loCnPedi[0].cl_nome.trim();
+                    goDvFant.innerHTML = loCnPedi[0].cl_fant.trim();
+                    goDvCida.innerHTML = loCnPedi[0].id_cida.trim() + "/" + loCnPedi[0].id_esta.trim();
+                    goDvFone.innerHTML = lcClFone;
+                    goDvData.innerHTML = jsonDate(loCnPedi[0].pe_data);
+                    goDvDtac.innerHTML = escondeDataZerada(jsonDate(loCnPedi[0].pe_dtac));
+                    goDvNfnr.innerHTML = loCnPedi[0].nf_nume;
+                    goDvValo.innerHTML = brMoney(lnPeTota - loCnPedi[0].pe_fret);
+                    goDvFret.innerHTML = brMoney(loCnPedi[0].pe_fret);
+                    goDvTtal.innerHTML = brMoney(lnPeTota);
+                    goTaObse.value = loCnPedi[0].pe_obse;
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO CONSULTAR PEDIDO", "ERRO");
+                    limpaCamposDetalhes();
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO CONSULTAR PEDIDO", "ERRO");
+                limpaCamposDetalhes();
+            }
+        });
+    }
+
+    function pesquisaProdutosPedido(lcPeNume) {
+        myApp.showTab("#DetPed");
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaProdutosPedido?lcIdEmpr=TRV&lcPeNume=" + lcPeNume,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmMpPedi) {
+                try {
+                    if (lmMpPedi.length > 0) {
+                        var lcMpPedi = "";
+
+                        lcMpPedi += "<div class='row no-gutter'>";
+                        lcMpPedi += "<div class='col-auto'><b>CÓD. FAB.</b></div>";
+                        lcMpPedi += "<div class='col-auto'><b>DENO.</b></div>";
+                        lcMpPedi += "<div class='col-auto'><b>QTDE</b></div>";
+                        lcMpPedi += "<div class='col-auto'><b>PREÇO</b></div>";
+                        lcMpPedi += "<div class='col-auto'><b>DESC.</b></div>";
+                        lcMpPedi += "<div class='col-auto'><b>TOTAL</b></div>";
+                        lcMpPedi += "</div>";
+
+                        for (var x = 0; x < lmMpPedi.length; x++) {
+                            lcMpPedi += "<div class='row no-gutter'>";
+                            lcMpPedi += "<div class='col-auto'>" + lmMpPedi[x].dm_cfab + "</div>";
+                            lcMpPedi += "<div class='col-auto'>" + lmMpPedi[x].dm_deno + "</div>";
+                            lcMpPedi += "<div class='col-auto'>" + lmMpPedi[x].mp_qtft + "</div>";
+                            lcMpPedi += "<div class='col-auto'>" + brMoney(lmMpPedi[x].mp_prun) + "</div>";
+                            lcMpPedi += "<div class='col-auto'>" + brMoney(lmMpPedi[x].mp_vdes) + "</div>";
+                            lcMpPedi += "<div class='col-auto'>" + brMoney(lmMpPedi[x].mp_tota) + "</div>";
+                            lcMpPedi += "</div>";
+                        }
+
+                        $("#divDeta").html(lcMpPedi).show();
+                    }
+                    else {
+                        myApp.alert("NENHUM PRODUTO DO PEDIDO ENCONTRADO", "ALERTA");
+                        limpaCamposDetalhes();
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO CONSULTAR PRODUTOS DO PEDIDO", "ERRO");
+                    limpaCamposDetalhes();
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO CONSULTAR PRODUTOS DO PEDIDO", "ERRO");
+                limpaCamposDetalhes();
+            }
+        });
+    }
+
+    function limpaCamposDetalhes() {
+        goDvPenr.innerHTML = "";
+        goDvIdcl.innerHTML = "";
+        goDvNome.innerHTML = "";
+        goDvFant.innerHTML = "";
+        goDvCida.innerHTML = "";
+        goDvFone.innerHTML = "";
+        goDvDtac.innerHTML = "";
+        goDvData.innerHTML = "";
+        goDvNfnr.innerHTML = "";
+        goDvValo.innerHTML = "";
+        goDvFret.innerHTML = "";
+        goDvTtal.innerHTML = "";
+        goTaObse.value = "";
+
+        document.getElementById("divDeta").style.display = "none";
+    }
+</script>
+<div class="list-block">
+    <ul>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-input">
+                        <select id="sltPesq" name="sltPesq" onchange="mostraPesquisaAcertados();">
+                            <option value="pendentes" selected="selected">PENDENTES</option>
+                            <option value="acertados">ACERTADOS</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li id="lliDtde" style="display: none;">
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">DT INICIAL</div>
+                    <div class="item-input">
+                        <input id="datInic" type="date" placeholder="DIGITE A DATA INICIAL" />
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li id="lliDtat" style="display: none;">
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">DT FINAL</div>
+                    <div class="item-input">
+                        <input id="datFina" type="date" placeholder="DIGITE A DATA FINAL" />
+                    </div>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+<a href="#" onclick="pesquisaPedidos();" class="button button-fill button-raised">PESQUISAR</a>
+<div class="content-block">
+    <div class="buttons-row">
+        <a href="#PsqPed" class="tab-link active button">PESQUISA</a>
+        <a href="#DetPed" class="tab-link button">DETALHES</a>
+    </div>
+</div>
+<div class="tabs">
+    <div id="PsqPed" class="tab active">
+        <div class="list-block">
+            <ul>
+                <li id="lliRank" style="display: none;" class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">RANKING</div>
+                        <div id="divRank" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">VALOR TOTAL</div>
+                        <div id="divTota" class="item-after"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div id="divPesq" class="content-block"></div>
+    </div>
+    <div id="DetPed" class="tab">
+        <div class="list-block">
+            <ul>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">NR. PEDIDO</div>
+                        <div id="divPenr" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CÓD. CLIENTE</div>
+                        <div id="divIdcl" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">RAZÃO SOCIAL</div>
+                        <div id="divNome" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">FANTASIA</div>
+                        <div id="divFant" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">CIDADE</div>
+                        <div id="divCida" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">TELEFONE</div>
+                        <div id="divFone" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">DATA PEDIDO</div>
+                        <div id="divData" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">DATA ACERTO</div>
+                        <div id="divDtac" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">NÚMERO NFE</div>
+                        <div id="divNfnr" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">VALOR</div>
+                        <div id="divValo" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">FRETE</div>
+                        <div id="divFret" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">V. TOTAL</div>
+                        <div id="divTtal" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="align-top">
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-title label">OBSERVAÇÃO</div>
+                            <div class="item-input">
+                                <textarea id="txaObse" readonly="readonly"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div id="divDeta" class="content-block"></div>
+    </div>
+</div>
+<script>
+    var goDtInic = document.getElementById("datInic");
+    var goDtFina = document.getElementById("datFina");
+    var goDvRank = document.getElementById("divRank");
+    var goDvTota = document.getElementById("divTota");
+    var goSlPesq = document.getElementById("sltPesq");
+    var goDvPenr = document.getElementById("divPenr");
+    var goDvIdcl = document.getElementById("divIdcl");
+    var goDvNome = document.getElementById("divNome");
+    var goDvFant = document.getElementById("divFant");
+    var goDvCida = document.getElementById("divCida");
+    var goDvFone = document.getElementById("divFone");
+    var goDvData = document.getElementById("divData");
+    var goDvDtac = document.getElementById("divDtac");
+    var goDvNfnr = document.getElementById("divNfnr");
+    var goDvValo = document.getElementById("divValo");
+    var goDvFret = document.getElementById("divFret");
+    var goDvTtal = document.getElementById("divTtal");
+    var goTaObse = document.getElementById("txaObse");
+    var gdDtHoje = new Date();
+    var gdMsAnte = new Date();
+    var gdSmAnte = new Date();
+
+    gdMsAnte.setMonth(gdMsAnte.getMonth() - 3);
+    gdMsAnte.setDate(gdMsAnte.getDate() - 1);
+    gdSmAnte.setDate(gdSmAnte.getDate() - 7);
+
+    $(document).ready(function () {
+        goDtInic.valueAsDate = gdSmAnte;
+        goDtFina.valueAsDate = gdDtHoje;
+
+        pesquisaPedidos();
+    });
+</script>

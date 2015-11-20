@@ -1,0 +1,49 @@
+﻿<script>
+    function pesquisaProdutosMaisVendidos() {
+        myApp.showIndicator();
+        $.ajax({
+            url: pcWsHttp + "pesquisaProdutosMaisVendidos?lcIdUser=" + cUIdUser + "&lcIdEmpr=CDM",
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmPqMven) {
+                try {
+                    var lcPqMven = "";
+                    var lnMvTota = 0;
+
+                    for (var x = 0; x < lmPqMven.length; x++) {
+                        lnMvTota += lmPqMven[x].MP_TOTA;
+                    }
+
+                    for (var x = 0; x < lmPqMven.length; x++) {
+                        lcPqMven += "<div class='row'>";
+                        lcPqMven += "<div class='col-75'>" + lmPqMven[x].DM_DENO + "</div>";
+                        lcPqMven += "<div class='col-25'>" + Math.round(lmPqMven[x].MP_TOTA / lnMvTota * 100) + " %</div>";
+                        lcPqMven += "</div>";
+                    }
+
+                    $("#divMven").html(lcPqMven).show();
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR PRODUTOS MAIS VENDIDOS", "ERRO");
+                }
+                myApp.hideIndicator()
+            },
+            error: function () {
+                myApp.hideIndicator()
+                myApp.alert("ERRO AO PESQUISAR PRODUTOS MAIS VENDIDOS", "ERRO");
+            }
+        });
+    }
+</script>
+
+<div class="content-block-title">8 PRODUTOS MAIS VENDIDOS NOS ÚLTIMOS 30 DIAS</div>
+<div id="divMven" class="content-block">
+</div>
+
+<script>
+    $(document).ready(function () {
+        pesquisaProdutosMaisVendidos();
+    });
+</script>

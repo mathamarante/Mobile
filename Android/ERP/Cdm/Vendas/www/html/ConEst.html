@@ -1,0 +1,125 @@
+﻿<script>
+    function pesquisaMateriaisDisponiveis() {
+        var loSlPesq = document.getElementById("sltPesq");
+        var loTxPesq = document.getElementById("txtPesq");
+        var loDvDmat = document.getElementById("divDmat");
+        var lcSlPesq = loSlPesq.value.toString().trim();
+        var lcTxPesq = loTxPesq.value.toString().trim();
+        var lcWsHttp = "";
+
+        if (lcTxPesq == "") {
+            lcWsHttp = pcWsHttp + "pesquisaMateriaisDisponiveis?lcIdFili=1&lcIdEmpr=CDM&lcIdDmat:IsNull=True&lcDmDeno:IsNull=True&lcDmEmba:IsNull=True&lcDmUnid:IsNull=True";
+        }
+        else if (lcSlPesq == "id_dmat") {
+            if (isNaN(lcTxPesq)) {
+                myApp.alert("CÓDIGO INVÁLIDO", "ERRO");
+                loDvDmat.style.display = "none";
+
+                return false;
+            }
+
+            lcWsHttp = pcWsHttp + "pesquisaMateriaisDisponiveis?lcIdFili=1&lcIdEmpr=CDM&lcIdDmat=" + lcTxPesq + "&lcDmDeno:IsNull=True&lcDmEmba:IsNull=True&lcDmUnid:IsNull=True";
+        }
+        else if (lcSlPesq == "dm_deno") {
+            lcWsHttp = pcWsHttp + "pesquisaMateriaisDisponiveis?lcIdFili=1&lcIdEmpr=CDM&lcIdDmat:IsNull=True&lcDmDeno=" + lcTxPesq + "&lcDmEmba:IsNull=True&lcDmUnid:IsNull=True";
+        }
+        else if (lcSlPesq == "dm_emba") {
+            lcWsHttp = pcWsHttp + "pesquisaMateriaisDisponiveis?lcIdFili=1&lcIdEmpr=CDM&lcIdDmat:IsNull=True&lcDmDeno:IsNull=True&lcDmEmba=" + lcTxPesq + "&lcDmUnid:IsNull=True";
+        }
+        else if (lcSlPesq == "dm_unid") {
+            lcWsHttp = pcWsHttp + "pesquisaMateriaisDisponiveis?lcIdFili=1&lcIdEmpr=CDM&lcIdDmat:IsNull=True&lcDmDeno:IsNull=True&lcDmEmba:IsNull=True&lcDmUnid=" + lcTxPesq;
+        }
+
+        myApp.showIndicator();
+
+        $.ajax({
+            url: lcWsHttp,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmPqDmat) {
+                try {
+                    if (lmPqDmat.length > 0) {
+                        var lcPqDmat = "";
+
+                        loDvDmat.style.display = "";
+
+                        lcPqDmat += "<div class='row no-gutter'>";
+                        lcPqDmat += "<div class='col-auto'><b>CÓDIGO</b></div>";
+                        lcPqDmat += "<div class='col-auto'><b>DENOMINAÇÃO</b></div>";
+                        lcPqDmat += "<div class='col-auto'><b>EMBALAGEM</b></div>";
+                        lcPqDmat += "<div class='col-auto'><b>UNIDADE</b></div>";
+                        lcPqDmat += "<div class='col-auto'><b>DISPONÍVEL</b></div>";
+                        lcPqDmat += "<div class='col-auto'><b>VENDIDO HJ</b></div>";
+                        lcPqDmat += "<div class='col-auto'><b>SALDO</b></div>";
+                        lcPqDmat += "</div>";
+
+                        for (var x = 0; x < lmPqDmat.length; x++) {
+                            lcPqDmat += "<div class='row no-gutter'>";
+                            lcPqDmat += "<div class='col-auto'>" + lmPqDmat[x].ID_DMAT + "</div>";
+                            lcPqDmat += "<div class='col-auto'>" + lmPqDmat[x].DM_DENO + "</div>";
+                            lcPqDmat += "<div class='col-auto'>" + lmPqDmat[x].DM_EMBA + "</div>";
+                            lcPqDmat += "<div class='col-auto'>" + lmPqDmat[x].DM_UNID + "</div>";
+                            lcPqDmat += "<div class='col-auto'>" + lmPqDmat[x].QT_ESTQ + "</div>";
+                            lcPqDmat += "<div class='col-auto'>" + lmPqDmat[x].MP_QTDE + "</div>";
+                            lcPqDmat += "<div class='col-auto'>" + lmPqDmat[x].QT_SALD + "</div>";
+                            lcPqDmat += "</div>";
+                        }
+
+                        $("#divDmat").html(lcPqDmat).show();
+                    }
+                    else {
+                        myApp.alert("NENHUM PRODUTO ENCONTRADO", "ALERTA");
+                        loDvDmat.style.display = "none";
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR PRODUTOS", "ERRO");
+                    loDvDmat.style.display = "none";
+                }
+                myApp.hideIndicator()
+            },
+            error: function () {
+                myApp.hideIndicator()
+                myApp.alert("ERRO AO PESQUISAR PRODUTOS", "ERRO");
+                loDvDmat.style.display = "none";
+            }
+        });
+    }
+</script>
+
+<div class="list-block">
+    <ul>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-input">
+                        <select id="sltPesq" name="sltPesq">
+                            <option value="id_dmat" selected="selected">CÓDIGO</option>
+                            <option value="dm_deno">DENOMINAÇÃO</option>
+                            <option value="dm_emba">EMBALAGEM</option>
+                            <option value="dm_unid">UNIDADE</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-input">
+                        <input id="txtPesq" type="text" placeholder="DIGITE O TEXTO DA PESQUISA" />
+                    </div>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+<a href="#" onclick="pesquisaMateriaisDisponiveis();" class="button button-fill button-raised">PESQUISAR</a>
+<div id="divDmat" style="display: none;" class="content-block"></div>
+<script>
+    $(document).ready(function () {
+        pesquisaMateriaisDisponiveis();
+    });
+</script>

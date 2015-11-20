@@ -1,0 +1,289 @@
+﻿<script>
+    function limpaCamposProduto() {
+        goNrIddm.value = "";
+        goNrPrun.value = "";
+        goNrQtde.value = "";
+        goDvMpto.innerHTML = "";
+    }
+
+    function limpaCampos() {
+        goNrIdcl.value = "";
+        goDtSaid.valueAsDate = proximoDiaUtil(dUDtHoje);
+
+        limpaCamposProduto();
+
+        document.getElementById("divCabe").style.display = "none";
+        goDvLito.style.display = "none";
+        $(".pedimvpr").remove();
+        goAhFnlz.style.display = "none";
+        goDvPeto.innerHTML = "";
+    }
+
+    function calculaTotalProduto() {
+        var lnMpPrun = 0, lnMpQtde = 0, lnMpTota = 0;
+
+        lnMpPrun = parseFloat(goNrPrun.value);
+        lnMpQtde = parseFloat(goNrQtde.value);
+
+        try { lnMpTota = lnMpPrun * lnMpQtde; }
+        catch (loWkErro) { goDvMpto.innerHTML = ""; }
+
+        if (lnMpTota > 0) { goDvMpto.innerHTML = brMoney(lnMpTota.toString().trim()); }
+        else { goDvMpto.innerHTML = ""; }
+    }
+
+    function removeProdutoPedido(lnIdDmat, lcMpTota) {
+        var lnMpTota = parseFloat(lcMpTota.replace("R$ ", "").split(".").join("").replace(",", "."));
+
+        $("#div" + lnIdDmat).remove();
+
+        gnQtProd--;
+
+        if (gnQtProd == 0) {
+            document.getElementById("divCabe").style.display = "none";
+            goDvLito.style.display = "none";
+            goAhFnlz.style.display = "none";
+            goDvPeto.innerHTML = "";
+        }
+        else {
+            var lnPeTota = parseFloat(goDvPeto.innerHTML.trim().replace("R$ ", "").split(".").join("").replace(",", "."));
+
+            lnPeTota = lnPeTota - lnMpTota;
+
+            goDvPeto.innerHTML = brMoney(lnPeTota);
+        }
+    }
+
+    function adicionaProdutoPedido() {
+        var lnPeTota = 0;
+
+        if (parseInt(goNrIddm.value) > 0) { }
+        else {
+            myApp.alert("CÓDIGO DO PRODUTO INVÁLIDO", "ERRO");
+
+            return false;
+        }
+
+        if (goDvMpto.innerHTML.trim() == "") {
+            myApp.alert("PREÇO OU QUANTIDADE INVÁLIDOS", "ERRO");
+
+            return false;
+        }
+
+        for (var x = 0; x < gnQtProd; x++) {
+            if (document.getElementById("div" + goNrIddm.value.toString().trim())) {
+                myApp.alert("PRODUTO JÁ INSERIDO NO PEDIDO", "ERRO");
+
+                return false;
+            }
+
+            lnPeTota += parseFloat(document.getElementById("divMpt" + x.toString().trim()).innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."));
+        }
+
+        document.getElementById("divCabe").style.display = "";
+        goDvLito.style.display = "";
+        goAhFnlz.style.display = "";
+
+        var lcPdMvpr = "";
+
+        lcPdMvpr = $("#divMvpr").html();
+
+        lcPdMvpr += "<div id='div" + goNrIddm.value.toString().trim() + "' class='row no-gutter pedimvpr'>";
+        lcPdMvpr += "<div id='divIdm" + gnQtProd.toString().trim() + "' class='col-auto'>" + goNrIddm.value.toString().trim() + "</div>";
+        lcPdMvpr += "<div id='divQtd" + gnQtProd.toString().trim() + "' class='col-auto'>" + brDecimal(goNrQtde.value.toString().trim()) + "</div>";
+        lcPdMvpr += "<div id='divPru" + gnQtProd.toString().trim() + "' class='col-auto'>" + brMoney(goNrPrun.value.toString().trim()) + "</div>";
+        lcPdMvpr += "<div id='divMpt" + gnQtProd.toString().trim() + "' class='col-auto'>" + goDvMpto.innerHTML.trim() + "</div>";
+        lcPdMvpr += "<div class='col-auto'><a href='#' onclick='removeProdutoPedido(" + goNrIddm.value.toString().trim() + ", \"" + goDvMpto.innerHTML.trim() + "\")' class='button button-fill color-red'>REMOVER</a></div>";
+        lcPdMvpr += "</div>";
+
+        lnPeTota += parseFloat(goDvMpto.innerHTML.trim().replace("R$ ", "").split(".").join("").replace(",", "."));
+
+        goDvPeto.innerHTML = brMoney(lnPeTota);
+
+        gnQtProd++;
+
+        $("#divMvpr").html(lcPdMvpr).show();
+
+        limpaCamposProduto();
+    }
+
+    function finalizaPedido() {
+        if (parseInt(goNrIdcl.value) > 0) { }
+        else {
+            myApp.alert("CÓDIGO DO CLIENTE INVÁLIDO", "ERRO");
+
+            return false;
+        }
+
+        var ldDtSaid = htmlDataParaObjetoData(goDtSaid.value);
+        var ldDtHoje = new Date();
+
+        if (ldDtSaid < ldDtHoje.setHours(0, 0, 0, 0)) {
+            myApp.alert("DATA DE SAÍDA INVÁLIDA", "ERRO");
+
+            return false;
+        }
+
+        var loPdLcto = { id_pedi: 1, id_clie: parseInt(goNrIdcl.value), pe_data: ldDtHoje, pe_said: ldDtSaid };
+
+        try {
+            var lmPdLcto = JSON.parse(localStorage.getItem("mUPdLcto"));
+            var lnIdPedi = 0;
+
+            for (var x = 0; x < lmPdLcto.length; x++) {
+                if (lmPdLcto[x].id_pedi > lnIdPedi) { lnIdPedi = lmPdLcto[x].id_pedi; }
+            }
+
+            lnIdPedi++;
+
+            loPdLcto.id_pedi = lnIdPedi;
+
+            lmPdLcto.push(loPdLcto);
+
+            localStorage.setItem("mUPdLcto", JSON.stringify(lmPdLcto));
+        }
+        catch (loWkErro) {
+            var lmPdLcto = [];
+
+            lmPdLcto.push(loPdLcto);
+
+            localStorage.setItem("mUPdLcto", JSON.stringify(lmPdLcto));
+        }
+
+        var lmPdMvpr = [];
+        var lnPdMvpr = gnQtProd;
+
+        for (var x = 0; x < lnPdMvpr; x++) {
+            var loPdMvpr = { id_pedi: 0, id_dmat: 0, mp_qtde: 0.00, mp_prun: 0.00, mp_tota: 0.00 };
+
+            loPdMvpr.id_pedi = loPdLcto.id_pedi;
+
+            try {
+                loPdMvpr.id_dmat = parseInt(document.getElementById("divIdm" + x.toString().trim()).innerHTML);
+                loPdMvpr.mp_qtde = parseFloat(document.getElementById("divQtd" + x.toString().trim()).innerHTML);
+                loPdMvpr.mp_prun = parseFloat(document.getElementById("divPru" + x.toString().trim()).innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."));
+                loPdMvpr.mp_tota = parseFloat(document.getElementById("divMpt" + x.toString().trim()).innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."));
+
+                lmPdMvpr.push(loPdMvpr);
+            }
+            catch (loWkErro) {
+                lnPdMvpr++;
+            }
+        }
+
+        localStorage.setItem("mUPdMvpr", JSON.stringify(lmPdMvpr));
+
+        myApp.alert("PEDIDO OFFLINE INSERIDO COM SUCESSO", "SUCESSO");
+
+        limpaCampos();
+    }
+</script>
+
+<div class="list-block">
+    <ul>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">CÓD. CLIENTE</div>
+                    <div class="item-input">
+                        <input id="numIdcl" type="number" min="1" step="1" placeholder="DIGITE O CÓDIGO DO CLIENTE">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">DATA PEDIDO</div>
+                <div id="divData" class="item-after"></div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">DATA SAÍDA</div>
+                    <div class="item-input">
+                        <input id="datSaid" type="date" placeholder="DIGITE A DATA DE SAÍDA" />
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="item-divider">PRODUTO</li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">CÓD. PRODUTO</div>
+                    <div class="item-input">
+                        <input id="numIddm" type="number" min="1" step="1" placeholder="DIGITE O CÓDIGO DO PRODUTO">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">PREÇO</div>
+                    <div class="item-input">
+                        <input id="numPrun" onkeyup="calculaTotalProduto();" type="number" min="0.01" placeholder="DIGITE O PREÇO DO PRODUTO( EX: 9999,99 )">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">QUANTIDADE</div>
+                    <div class="item-input">
+                        <input id="numQtde" onkeyup="calculaTotalProduto();" type="number" min="0.01" placeholder="DIGITE O QUANTIDADE DO PRODUTO( EX: 9999,99 )">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">TOTAL PRODUTO</div>
+                <div id="divMpto" class="item-after"></div>
+            </div>
+        </li>
+    </ul>
+</div>
+<a href="#" onclick="adicionaProdutoPedido();" class="button button-fill button-raised">ADICIONAR PRODUTO</a>
+<div id="divMvpr" class="content-block">
+    <div id="divCabe" style="display: none;" class="row no-gutter">
+        <div class='col-auto'><b>CÓDIGO</b></div>
+        <div class='col-auto'><b>QTDE</b></div>
+        <div class='col-auto'><b>PREÇO</b></div>
+        <div class='col-auto'><b>TOTAL</b></div>
+        <div class='col-auto'></div>
+    </div>
+</div>
+<div id="divLito" style="display: none;" class="list-block">
+    <ul>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">TOTAL PEDIDO</div>
+                <div id="divPeto" class="item-after"></div>
+            </div>
+        </li>
+    </ul>
+</div>
+<a href="#" id="ahrFnlz" onclick="finalizaPedido();" style="display: none;" class="button button-fill button-raised">FINALIZAR PEDIDO</a>
+<br />
+
+<script>
+    var goNrIddm = document.getElementById("numIddm");
+    var goNrPrun = document.getElementById("numPrun");
+    var goNrQtde = document.getElementById("numQtde");
+    var goDvMpto = document.getElementById("divMpto");
+    var goDvLito = document.getElementById("divLito");
+    var goDvPeto = document.getElementById("divPeto");
+    var goNrIdcl = document.getElementById("numIdcl");
+    var goDtSaid = document.getElementById("datSaid");
+    var goAhFnlz = document.getElementById("ahrFnlz");
+    var gnQtProd = 0;
+
+    $(document).ready(function () {
+        document.getElementById("divData").innerHTML = brData(dUDtHoje);
+        goDtSaid.valueAsDate = proximoDiaUtil(dUDtHoje);
+        myApp.hideIndicator();
+    });
+</script>

@@ -1,0 +1,115 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <link rel="stylesheet" href="../framework7/css/framework7.material.min.css">
+    <link rel="stylesheet" href="../framework7/css/framework7.material.colors.min.css">
+    <link rel="stylesheet" href="../framework7/css/my-app.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/script.js"></script>
+    <script>
+        function sair() {
+            myApp.confirm("DESEJA SAIR?", "ALERTA", function () {
+                myApp.showIndicator();
+                window.location = "AutLgn.html";
+            });
+        }
+
+        function redireciona(lcNmPagi, lcTiPagi) {
+            myApp.showIndicator();
+            $("#divPage").load(lcNmPagi);
+            oUDvTitu.innerHTML = lcTiPagi;
+        }
+    </script>
+</head>
+<body>
+    <div class="statusbar-overlay"></div>
+    <div class="panel-overlay"></div>
+    <div class="panel panel-left panel-cover">
+        <div class="list-block">
+            <ul>
+                <li>
+                    <a href="#" onclick="redireciona('OffPed.html', 'PEDIDOS');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/paper.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">PEDIDOS</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="redireciona('OffNov.html', 'NOVO PEDIDO');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/pencil.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">NOVO PEDIDO</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="sair();" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/exit.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">SAIR</div>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="views">
+        <div class="view view-main">
+            <div class="pages navbar-fixed toolbar-fixed">
+                <div class="page">
+                    <div class="navbar">
+                        <div class="navbar-inner">
+                            <div id="divTitu" class="center"></div>
+                        </div>
+                    </div>
+                    <div class="toolbar">
+                        <div class="toolbar-inner">
+                            <a href="#" data-panel="left" class="link icon-only open-panel">
+                                <i class="icon icon-bars"></i>
+                                <span>MENU</span>
+                            </a>
+                            <a href="#" class="link">
+                                <img src="../img/user.png" />
+                                &nbsp;
+                                <span id="spnUsua">USUÁRIO OFFLINE</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div id="divPage" class="page-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../cordova.js"></script>
+    <script type="text/javascript" src="../framework7/js/framework7.min.js"></script>
+    <script type="text/javascript" src="../framework7/js/my-app.js"></script>
+    <script type="text/javascript" src="../js/jquery-2.1.4.min.js"></script>
+    <script>
+        var oUDvTitu = document.getElementById("divTitu");
+        var dUDtHoje = new Date();
+
+        var myApp = new Framework7({
+            material: true
+        });
+
+        $(document).ready(function () {
+            oUDvTitu.innerHTML = "PEDIDOS";
+
+            //$("#divPage").load("OffPed.html");
+        });
+    </script>
+</body>
+</html> 

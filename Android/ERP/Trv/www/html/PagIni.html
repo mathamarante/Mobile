@@ -1,0 +1,204 @@
+﻿<script>
+    function limpaCampos() {
+        goDvVapo.innerHTML = "";
+        goDvVate.innerHTML = "";
+        goDvAv10.innerHTML = "";
+        goDvAv20.innerHTML = "";
+        goDvAv30.innerHTML = "";
+        goDvAven.innerHTML = "";
+    }
+
+    function pesquisaFinanceiroResumido() {
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaFinanceiroResumido?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim(),
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmFiResu) {
+                try {
+                    if (lmFiResu.length > 0) {
+                        var lcFiResu = "", lcCrDtve = "";
+                        var ldCrDtve, ldDtHoje = new Date(), ldMsAtrs = new Date(), ldDtAt10 = new Date(), ldDtAt20 = new Date(), ldDtAt30 = new Date();
+                        var lnVnAt30 = 0, lnVnAp30 = 0, lnAvAt10 = 0, lnAvAt20 = 0, lnAvAt30 = 0, lnAvAp30 = 0;
+
+                        ldDtHoje.setHours(0, 0, 0, 0);
+                        ldMsAtrs.setHours(0, 0, 0, 0);
+                        ldDtAt10.setHours(0, 0, 0, 0);
+                        ldDtAt20.setHours(0, 0, 0, 0);
+                        ldDtAt30.setHours(0, 0, 0, 0);
+                        ldMsAtrs.setMonth(ldMsAtrs.getMonth() - 1);
+                        ldDtAt10.setDate(ldDtAt10.getDate() + 10);
+                        ldDtAt20.setDate(ldDtAt20.getDate() + 20);
+                        ldDtAt30.setMonth(ldDtAt30.getMonth() + 1);
+
+                        for (var x = 0; x < lmFiResu.length; x++) {
+                            lcCrDtve = jsonDate(lmFiResu[x].cr_dtve);
+                            ldCrDtve = htmlDataParaObjetoData(lcCrDtve.substring(6) + "-" + lcCrDtve.substring(3, 5) + "-" + lcCrDtve.substring(0, 2));
+
+                            if (ldCrDtve < ldMsAtrs) {
+                                lnVnAp30 += lmFiResu[x].cr_valo;
+                            }
+                            else if (ldCrDtve < ldDtHoje && ldCrDtve >= ldMsAtrs) {
+                                lnVnAt30 += lmFiResu[x].cr_valo;
+                            }
+                            else if (ldCrDtve >= ldDtHoje && ldCrDtve <= ldDtAt10) {
+                                lnAvAt10 += lmFiResu[x].cr_valo;
+                            }
+                            else if (ldCrDtve > ldDtAt10 && ldCrDtve <= ldDtAt20) {
+                                lnAvAt20 += lmFiResu[x].cr_valo;
+                            }
+                            else if (ldCrDtve > ldDtAt20 && ldCrDtve <= ldDtAt30) {
+                                lnAvAt30 += lmFiResu[x].cr_valo;
+                            }
+                            else if (ldCrDtve > ldDtAt30) {
+                                lnAvAp30 += lmFiResu[x].cr_valo;
+                            }
+                        }
+
+                        goDvVapo.innerHTML = brMoney(lnVnAp30);
+                        goDvVate.innerHTML = brMoney(lnVnAt30);
+                        goDvAv10.innerHTML = brMoney(lnAvAt10);
+                        goDvAv20.innerHTML = brMoney(lnAvAt20);
+                        goDvAv30.innerHTML = brMoney(lnAvAt30);
+                        goDvAven.innerHTML = brMoney(lnAvAp30);
+                    }
+                    else {
+                        limpaCampos();
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR FINANCEIRO RESUMIDO", "ERRO");
+                    limpaCampos();
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO PESQUISAR FINANCEIRO RESUMIDO", "ERRO");
+                limpaCampos();
+            }
+        });
+    }
+
+    function pesquisaClientesNaoFidelizados() {
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaClientesNaoFidelizados?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim(),
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmClInfi) {
+                try {
+                    if (lmClInfi.length > 0) {
+                        var lcClInfi = "";
+
+                        lcClInfi += "<div class='row no-gutter'>";
+                        lcClInfi += "<div class='col-auto'><b>CÓDIGO</b></div>";
+                        lcClInfi += "<div class='col-auto'><b>R. SOCIAL</b></div>";
+                        lcClInfi += "<div class='col-auto'><b>CIDADE</b></div>";
+                        lcClInfi += "<div class='col-auto'><b>ULT. COMP.</b></div>";
+                        lcClInfi += "</div>";
+
+                        for (var x = 0; x < lmClInfi.length; x++) {
+                            lcClInfi += "<div onclick='consultaInformacoesCliente(" + x + ");' class='row no-gutter'>";
+                            lcClInfi += "<div id='divIdc" + x.toString().trim() + "' class='col-auto'>" + lmClInfi[x].id_clie + "</div>";
+                            lcClInfi += "<div class='col-auto'>" + lmClInfi[x].cl_nome + "</div>";
+                            lcClInfi += "<div class='col-auto'>" + lmClInfi[x].id_cida + "</div>";
+                            lcClInfi += "<div class='col-auto'>" + escondeDataZerada(jsonDate(lmClInfi[x].pe_data)) + "</div>";
+                            lcClInfi += "</div>";
+                        }
+
+                        $("#divCnfi").html(lcClInfi).show();
+                    }
+                    else {
+                        goDvCnfi.style.display = "none";
+                    }
+                }
+                catch (loWkErro) {
+                    goDvCnfi.style.display = "none";
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                goDvCnfi.style.display = "none";
+            }
+        });
+    }
+
+    function consultaInformacoesCliente(lnNrLinh) {
+        myApp.showIndicator();
+
+        var loDvIdcl = document.getElementById("divIdc" + lnNrLinh.toString().trim());
+        var lcIdClie = loDvIdcl.innerHTML.trim();
+
+        sessionStorage.setItem("lcIdClie", lcIdClie);
+
+        redireciona("PsqCli.html", "CLIENTES");
+    }
+</script>
+<div class="list-block">
+    <ul>
+        <li class="item-divider">TÍTULOS VENCIDOS</li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">APÓS 30 DIAS</div>
+                <div id="divVapo" class="item-after"></div>
+            </div>
+        </li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">ATÉ 30 DIAS</div>
+                <div id="divVate" class="item-after"></div>
+            </div>
+        </li>
+        <li class="item-divider">TÍTULOS A VENCER</li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">ATÉ 10 DIAS</div>
+                <div id="divAv10" class="item-after"></div>
+            </div>
+        </li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">DE 11 A 20 DIAS</div>
+                <div id="divAv20" class="item-after"></div>
+            </div>
+        </li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">DE 21 A 30 DIAS</div>
+                <div id="divAv30" class="item-after"></div>
+            </div>
+        </li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">ACIMA DE 30 DIAS</div>
+                <div id="divAven" class="item-after"></div>
+            </div>
+        </li>
+        <li class="item-divider">CLIENTES QUE NÃO COMPRAM HÁ MAIS DE 30 DIAS</li>
+    </ul>
+</div>
+<div id="divCnfi" class="content-block"></div>
+<script>
+    var goDvVapo = document.getElementById("divVapo");
+    var goDvVate = document.getElementById("divVate");
+    var goDvAv10 = document.getElementById("divAv10");
+    var goDvAv20 = document.getElementById("divAv20");
+    var goDvAv30 = document.getElementById("divAv30");
+    var goDvAven = document.getElementById("divAven");
+    var goDvCnfi = document.getElementById("divCnfi");
+
+    $(document).ready(function () {
+        pesquisaFinanceiroResumido();
+        pesquisaClientesNaoFidelizados();
+    });
+</script>
