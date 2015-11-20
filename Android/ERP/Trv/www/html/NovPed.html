@@ -138,6 +138,8 @@
 
         if (lcTxCfab == "") { return; }
 
+        myApp.showIndicator();
+
         $.ajax({
             url: pcWsHttp + "consultaProduto?lcIdEmpr=TRV&lcDmCfab=" + lcTxCfab,
             type: "GET",
@@ -145,6 +147,8 @@
             contentType: "application/json; charset=utf-8",
 
             success: function (lmCnProd) {
+                myApp.hideIndicator();
+
                 try {
                     if (lmCnProd.length > 0) {
                         goTxCfab.value = lcTxCfab;
@@ -179,6 +183,7 @@
                 }
             },
             error: function () {
+                myApp.hideIndicator();
                 limpaCamposProduto();
                 myApp.alert("NENHUM PRODUTO ENCONTRADO", "ALERTA");
             }

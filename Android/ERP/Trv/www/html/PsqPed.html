@@ -58,9 +58,20 @@
                         lcPqPedi += "<div class='col-auto'><b>VALOR</b></div>";
                         lcPqPedi += "</div>";
 
-                        var lnPeTota = 0;
+                        var lnPeTota = 0, lnIdClie = lmPqPedi[0].id_clie, lnClTota = 0;
 
                         for (var x = 0; x < lmPqPedi.length; x++) {
+                            if (lnIdClie != lmPqPedi[x].id_clie && lcSlPesq == "pendentes") {
+                                lcPqPedi += "<div class='row no-gutter'>";
+                                lcPqPedi += "<div class='col-auto'></div>";
+                                lcPqPedi += "<div class='col-auto'></div>";
+                                lcPqPedi += "<div style='color: red;' class='col-auto'><b>TOTAL</b></div>";
+                                lcPqPedi += "<div style='color: red;' class='col-auto'><b>" + brMoney(lnClTota) + "</b></div>";
+                                lcPqPedi += "</div>";
+
+                                lnClTota = 0;
+                            }
+
                             if (isNaN(lmPqPedi[x].tp_tota - lmPqPedi[x].tp_devl)) {
                                 lnPeTota = 0;
                             }
@@ -81,6 +92,20 @@
                             lcPqPedi += "</div>";
 
                             lnVdTota += lmPqPedi[x].tp_tota - lmPqPedi[x].tp_devl;
+
+                            lnIdClie = lmPqPedi[x].id_clie;
+                            lnClTota += lmPqPedi[x].tp_tota - lmPqPedi[x].tp_devl;
+                        }
+
+                        if (lcSlPesq == "pendentes") {
+                            lcPqPedi += "<div class='row no-gutter'>";
+                            lcPqPedi += "<div class='col-auto'></div>";
+                            lcPqPedi += "<div class='col-auto'></div>";
+                            lcPqPedi += "<div style='color: red;' class='col-auto'><b>TOTAL</b></div>";
+                            lcPqPedi += "<div style='color: red;' class='col-auto'><b>" + brMoney(lnClTota) + "</b></div>";
+                            lcPqPedi += "</div>";
+
+                            lnClTota = 0;
                         }
 
                         goDvTota.innerHTML = brMoney(lnVdTota);
@@ -288,6 +313,8 @@
 
         document.getElementById("divDeta").style.display = "none";
     }
+
+    //@ sourceURL=PsqPed1.js
 </script>
 <div class="list-block">
     <ul>
