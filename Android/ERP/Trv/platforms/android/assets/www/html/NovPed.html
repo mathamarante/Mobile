@@ -1,4 +1,69 @@
 ﻿<script>
+    function consultaOrcamento() {
+        myApp.showIndicator();
+
+        if (goNrOrca.value == 0) {
+            myApp.hideIndicator();
+            limpaCampos();
+            return;
+        }
+        else if (goNrOrca.value >= 1) { }
+        else {
+            myApp.hideIndicator();
+            limpaCampos();
+            myApp.alert("NÚMERO DO ORÇAMENTO INVÁLIDO", "ERRO");
+
+            return;
+        }
+
+        $.ajax({
+            url: pcWsHttp + "consultaOrcamento?lcIdEmpr=TRV&lcIdFili=1&lcPeNume=" + goNrOrca.value.toString().trim(),
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmCnOrca) {
+                myApp.hideIndicator();
+
+                try {
+                    if (lmCnOrca.length > 0) {
+                        goNrIdcl.value = lmCnOrca[0].id_clie;
+                        goNrIdcl.onblur();
+
+                        document.getElementById("divCabe").style.display = "";
+
+                        var lcPdMvpr;
+
+                        for (var x = 0; x < lmCnOrca.length; x++) {
+                            lcPdMvpr = "";
+
+                            lcPdMvpr += "<div id='div" + lmCnOrca[x].dm_cfab.toString().trim() + "' class='row no-gutter pedimvpr'>";
+                            lcPdMvpr += "<div class='col-auto'>" + lmCnOrca[x].dm_cfab.toString().trim() + "</div>";
+                            lcPdMvpr += "<div class='col-auto'>" + lmCnOrca[x].mp_qtde.toString().trim() + "<span style='display: none;'>" + goDvQtes.innerHTML.trim() + "</span></div>";
+                            lcPdMvpr += "<div class='col-auto'>" + brMoney(lmCnOrca[x].mp_prun.toString().trim()) + "</div>";
+                            lcPdMvpr += "<div class='col-auto'>" + brMoney(parseFloat(lmCnOrca[x].mp_qtde) * parseFloat(lmCnOrca[x].mp_prun)) + "</div>";
+                            lcPdMvpr += "<div class='col-auto'>" + brDecimal(lmCnOrca[x].mp_pdes) + "</div>";
+                            lcPdMvpr += "<div class='col-auto'><a href='#' onclick='removeProdutoPedido(\"" + lmCnOrca[x].dm_cfab.toString().trim() + "\")' class='button button-fill color-red'>REMOVER</a></div>";
+                            lcPdMvpr += "</div>";
+                        }
+
+                        $("#divMvpr").html(lcPdMvpr).show();
+
+                        calculaTotal();
+
+                        goTxCfab.focus();
+                    }
+                    else { myApp.alert("ORÇAMENTO NÃO ENCONTRADO", "ERRO"); }
+                }
+                catch (loWkErro) { myApp.alert("ORÇAMENTO NÃO ENCONTRADO", "ERRO"); }
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO CCONSULTAR ORÇAMENTO", "ERRO");
+            }
+        });
+    }
+
     function pesquisaClientes() {
         goSlClie.disabled = true;
 
@@ -514,6 +579,16 @@
                 <div id="divData" class="item-after"></div>
             </div>
         </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">ORÇAMENTO</div>
+                    <div class="item-input">
+                        <input id="numOrca" type="number" min="1" step="1" placeholder="DIGITE O NÚMERO DO ORÇAMENTO" onfocus="limpaCampos();" onblur="consultaOrcamento();">
+                    </div>
+                </div>
+            </div>
+        </li>
         <li class="item-divider">CLIENTE</li>
         <li>
             <div class="item-content">
@@ -685,6 +760,7 @@
 <a href="#" id="ahrGera" onclick="geraOrdemSeparacao();" class="button button-fill button-raised">GERAR</a>
 <br />
 <script>
+    var goNrOrca = document.getElementById("numOrca");
     var goNrIdcl = document.getElementById("numIdcl");
     var goDvData = document.getElementById("divData");
     var goSlClie = document.getElementById("sltClie");
