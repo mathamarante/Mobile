@@ -27,22 +27,31 @@
 
                 try {
                     if (lmCnOrca.length > 0) {
+                        goDvData.innerHTML = jsonDate(lmCnOrca[0].pe_data);
                         goNrIdcl.value = lmCnOrca[0].id_clie;
                         goNrIdcl.onblur();
 
                         document.getElementById("divCabe").style.display = "";
 
-                        var lcPdMvpr = "";
+                        var lcPdMvpr = "", lcRdStyl = "";
 
                         lcPdMvpr = $("#divMvpr").html();
 
+                        var lnQtSald = 0;
+
                         for (var x = 0; x < lmCnOrca.length; x++) {
+                            if (lmCnOrca[x].qt_sald < 0) { lnQtSald = 0; }
+                            else { lnQtSald = lmCnOrca[x].qt_sald; }
+
+                            if (lmCnOrca[x].mp_qtde > lnQtSald) { lcRdStyl = "style='color: red;'"; }
+
                             lcPdMvpr += "<div id='div" + lmCnOrca[x].dm_cfab.toString().trim() + "' class='row no-gutter pedimvpr'>";
-                            lcPdMvpr += "<div class='col-auto'>" + lmCnOrca[x].dm_cfab.toString().trim() + "</div>";
-                            lcPdMvpr += "<div class='col-auto'>" + lmCnOrca[x].mp_qtde.toString().trim() + "<span style='display: none;'>" + goDvQtes.innerHTML.trim() + "</span></div>";
-                            lcPdMvpr += "<div class='col-auto'>" + brMoney(lmCnOrca[x].mp_prun.toString().trim()) + "</div>";
-                            lcPdMvpr += "<div class='col-auto'>" + brMoney(parseFloat(lmCnOrca[x].mp_qtde) * parseFloat(lmCnOrca[x].mp_prun)) + "</div>";
-                            lcPdMvpr += "<div class='col-auto'>" + brDecimal(lmCnOrca[x].mp_pdes) + "</div>";
+                            lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + lmCnOrca[x].dm_cfab.toString().trim() + "</div>";
+                            lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + lnQtSald.toString().trim() + "</div>";
+                            lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + lmCnOrca[x].mp_qtde.toString().trim() + "</div>";
+                            lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brMoney(lmCnOrca[x].mp_prun.toString().trim()) + "</div>";
+                            lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brMoney(parseFloat(lmCnOrca[x].mp_qtde) * parseFloat(lmCnOrca[x].mp_prun)) + "</div>";
+                            lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brDecimal(lmCnOrca[x].mp_pdes) + "</div>";
                             lcPdMvpr += "<div class='col-auto'><a href='#' onclick='removeProdutoPedido(\"" + lmCnOrca[x].dm_cfab.toString().trim() + "\")' class='button button-fill color-red'>REMOVER</a></div>";
                             lcPdMvpr += "</div>";
                         }
@@ -53,11 +62,21 @@
 
                         goTxCfab.focus();
                     }
-                    else { myApp.alert("ORÇAMENTO NÃO ENCONTRADO", "ERRO"); }
+                    else {
+                        limpaCampos();
+                        goNrOrca.focus();
+                        myApp.alert("ORÇAMENTO NÃO ENCONTRADO", "ERRO");
+                    }
                 }
-                catch (loWkErro) { myApp.alert("ORÇAMENTO NÃO ENCONTRADO", "ERRO"); }
+                catch (loWkErro) {
+                    limpaCampos();
+                    goNrOrca.focus();
+                    myApp.alert("ORÇAMENTO NÃO ENCONTRADO", "ERRO");
+                }
             },
             error: function () {
+                limpaCampos();
+                goNrOrca.focus();
                 myApp.hideIndicator();
                 myApp.alert("ERRO AO CCONSULTAR ORÇAMENTO", "ERRO");
             }
@@ -138,6 +157,8 @@
 
         if (lcTxCfab == "") { return; }
 
+        myApp.showIndicator();
+
         $.ajax({
             url: pcWsHttp + "consultaProduto?lcIdEmpr=TRV&lcDmCfab=" + lcTxCfab,
             type: "GET",
@@ -145,6 +166,8 @@
             contentType: "application/json; charset=utf-8",
 
             success: function (lmCnProd) {
+                myApp.hideIndicator();
+
                 try {
                     if (lmCnProd.length > 0) {
                         goTxCfab.value = lcTxCfab;
@@ -153,6 +176,11 @@
                         if (lmCnProd[0].qt_sald < 0) { goDvQtes.innerHTML = 0; }
                         else { goDvQtes.innerHTML = lmCnProd[0].qt_sald; }
 
+                        if (lmCnProd[0].dm_pcus == 0) { gnDmPcus = lmCnProd[0].dm_pvar * 0.4; }
+                        else { gnDmPcus = lmCnProd[0].dm_pcus; }
+
+                        gnDmPatc = lmCnProd[0].dm_patc;
+                        gnDmPdis = lmCnProd[0].dm_pdis;
                         goNrPrun.value = lmCnProd[0].dm_pvar.toString().trim();
                         gnDmPvar = lmCnProd[0].dm_pvar;
                         gnWkPrun = lmCnProd[0].dm_pvar;
@@ -179,6 +207,7 @@
                 }
             },
             error: function () {
+                myApp.hideIndicator();
                 limpaCamposProduto();
                 myApp.alert("NENHUM PRODUTO ENCONTRADO", "ALERTA");
             }
@@ -312,7 +341,10 @@
         gnDmQemb = 0;
         gnDmQtpr = 0;
         gnDmProm = 0;
-        gnWkPrun = 0
+        gnWkPrun = 0;
+        gnDmPcus = 0;
+        gnDmPatc = 0;
+        gnDmPdis = 0;
     }
 
     function adicionaProdutoPedido() {
@@ -358,33 +390,36 @@
             return;
         }
 
-
         if (document.getElementById("div" + goTxCfab.value.toString().trim())) {
             goTxCfab.focus();
 
             return;
         }
 
+        if (goNrOrca.value.trim() == "") { inserePedido(); }
+        else { insereProduto(); }
+
         document.getElementById("divCabe").style.display = "";
 
-        var lcPdMvpr = "";
+        var lcPdMvpr = "", lcRdStyl = "";
+
+        if (parseFloat(goNrQtde.value) > parseFloat(goDvQtes.innerHTML)) { lcRdStyl = "style='color: red;'"; }
 
         lcPdMvpr = $("#divMvpr").html();
 
         lcPdMvpr += "<div id='div" + goTxCfab.value.toString().trim() + "' class='row no-gutter pedimvpr'>";
-        lcPdMvpr += "<div class='col-auto'>" + goTxCfab.value.toString().trim() + "</div>";
-        lcPdMvpr += "<div class='col-auto'>" + goNrQtde.value.toString().trim() + "<span style='display: none;'>" + goDvQtes.innerHTML.trim() + "</span></div>";
-        lcPdMvpr += "<div class='col-auto'>" + brMoneyCasasDecimais(goNrPrun.value.toString().trim()) + "</div>";
-        lcPdMvpr += "<div class='col-auto'>" + brMoney(goNrQtde.value * goNrPrun.value) + "</div>";
-        lcPdMvpr += "<div class='col-auto'>" + brDecimal(goNrPdes.value) + "</div>";
+        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + goTxCfab.value.toString().trim() + "</div>";
+        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + goDvQtes.innerHTML.trim() + "</div>";
+        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + goNrQtde.value.toString().trim() + "</div>";
+        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brMoneyCasasDecimais(goNrPrun.value.toString().trim()) + "</div>";
+        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brMoney(goNrQtde.value * goNrPrun.value) + "</div>";
+        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brDecimal(goNrPdes.value) + "</div>";
         lcPdMvpr += "<div class='col-auto'><a href='#' onclick='removeProdutoPedido(\"" + goTxCfab.value.toString().trim() + "\")' class='button button-fill color-red'>REMOVER</a></div>";
         lcPdMvpr += "</div>";
 
         $("#divMvpr").html(lcPdMvpr).show();
 
         calculaTotal();
-
-        goTxCfab.focus();
     }
 
     function removeProdutoPedido(lcDmCfab) {
@@ -393,6 +428,8 @@
         if ($("#divMvpr > div").length <= 1) { document.getElementById("divCabe").style.display = "none"; }
 
         calculaTotal();
+
+        deletaProduto(lcDmCfab);
     }
 
     function calculaTotal() {
@@ -405,8 +442,8 @@
 
         $("#divMvpr > div").each(function () {
             if (this.id != "divCabe") {
-                lnClTota = parseFloat($("#" + this.id + " > div")[3].innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."));
-                lnClPdes = parseFloat($("#" + this.id + " > div")[4].innerHTML.split(".").join("").replace(",", "."));
+                lnClTota = parseFloat($("#" + this.id + " > div")[4].innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."));
+                lnClPdes = parseFloat($("#" + this.id + " > div")[5].innerHTML.split(".").join("").replace(",", "."));
 
                 lnToPeca += lnClTota;
                 lnVlDesc += lnClTota * (lnClPdes / 100);
@@ -484,21 +521,23 @@
 
         var lnWkQtes = 0, lnWkQtde = 0, lnPeQtde = 0;
         var llFlRtrn = false;
+        var lcDmCfab = "";
 
         $("#divMvpr > div").each(function () {
             if (this.id != "divCabe") {
-                lnWkQtes = parseInt($("#" + this.id + " > div > span")[0].innerHTML);
-                lnWkQtde = parseInt($("#" + this.id + " > div")[1].innerHTML.replace(/(^\d+)(.+$)/i, '$1'));
+                lnWkQtes = parseInt($("#" + this.id + " > div")[1].innerHTML);
+                lnWkQtde = parseInt($("#" + this.id + " > div")[2].innerHTML);
+                lcDmCfab = $("#" + this.id + " > div")[0].innerHTML;
                 lnPeQtde += lnWkQtde;
 
                 if (lnWkQtde > lnWkQtes && parseInt(goSlTpsa.value) != 4) {
-                    myApp.alert("ITENS COM ESTOQUE INSUFICIENTE, ESCOLHA COMPRA NA PRAÇA", "ERRO");
+                    myApp.alert("ITEM " + lcDmCfab + " COM ESTOQUE INSUFICIENTE, ESCOLHA COMPRA NA PRAÇA", "ERRO");
 
                     llFlRtrn = true;
                 }
 
                 if (lnWkQtde <= lnWkQtes && parseInt(goSlTpsa.value) == 4) {
-                    myApp.alert("ITENS COM ESTOQUE, NÃO PERMITIDO COMPRA NA PRAÇA", "ERRO");
+                    myApp.alert("ITEM " + lcDmCfab + " COM ESTOQUE, NÃO PERMITIDO COMPRA NA PRAÇA", "ERRO");
 
                     llFlRtrn = true;
                 }
@@ -507,58 +546,150 @@
 
         if (llFlRtrn) { return; }
 
-        consultaInformacoesPreInsercao(lnPeQtde);
+        atualizaPedido(lnPeQtde);
+        insereSeparacao();
     }
 
-    function consultaInformacoesPreInsercao(lnPeQtde) {
+    function inserePedido() {
+        myApp.showIndicator();
         var lcIdClie = goNrIdcl.value.toString().trim();
-        var lcPePdes = ((parseFloat(goDvVdes.innerHTML.replace("R$ ", "").split(".").join("").replace(",", ".")) / parseFloat(goDvTpec.innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."))) * 100).toFixed(2).toString();
 
         $.ajax({
-            url: pcWsHttp + "consultaInformacoesPreInsercao?lcIdEmpr=TRV&lcIdClie=" + lcIdClie + "&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcPeOrse=" + parseInt(goSlTpsa.value) + "&lcPePdes=" + lcPePdes,
+            url: pcWsHttp + "inserePedido?lcIdEmpr=TRV&lcIdClie=" + lcIdClie + "&lcIdFili=1&lcIdVend=" + poCnVend.id_vend.toString().trim(),
             type: "GET",
             dataType: "jsonp",
             contentType: "application/json; charset=utf-8",
 
-            success: function (loPrInse) {
-                inserePedido(loPrInse, lnPeQtde);
+            success: function (loInPedi) {
+                myApp.hideIndicator();
+
+                try {
+                    goNrOrca.value = loInPedi.pe_nume.toString().trim();
+
+                    insereProduto();
+                }
+                catch (loWkErro) { myApp.alert("ERRO AO INSERIR PEDIDO", "ERRO"); }
             },
-            error: function () { myApp.alert("ERRO AO PRÉ INSERIR PEDIDO", "ERRO"); }
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO INSERIR PEDIDO", "ERRO");
+            }
         });
     }
 
-    function inserePedido(loPrInse, lnPeQtde) {
-        var lcIdClie = goNrIdcl.value.toString().trim();
-        var lcPePdes = ((parseFloat(goDvVdes.innerHTML.replace("R$ ", "").split(".").join("").replace(",", ".")) / parseFloat(goDvTpec.innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."))) * 100).toFixed(2).toString().replace(".", ",");
-        var lcPeTota = goDvTota.innerHTML.replace("R$ ", "").split(".").join("");
-        var lcPeFret = goNrFret.value.replace("R$ ", "").split(".").join("");
-        var lcPePcom = "0", lcPePcot = "0", lcPeVdpr = "0", lcPeTlpr = "0";
-        var lmSlTran = goSlTran.value.split("/");
+    function insereProduto() {
+        myApp.showIndicator();
 
-        if (loPrInse.pe_pcom > 0) { lcPePcom = loPrInse.pe_pcom.toString().trim(); }
-        if (loPrInse.pe_pcot > 0) { lcPePcot = loPrInse.pe_pcot.toString().trim(); }
-        if (loPrInse.pe_vdpr > 0) { lcPeVdpr = loPrInse.pe_vdpr.toString().trim(); }
-        if (loPrInse.pe_tlpr > 0) { lcPeTlpr = loPrInse.pe_tlpr.toString().trim(); }
+        var lcMpPdes = "";
+
+        if (goNrPdes.value.trim() == "") { lcMpPdes = "0"; }
+        else { lcMpPdes = goNrPdes.value.trim(); }
 
         $.ajax({
-            url: pcWsHttp + "inserePedido?lcIdEmpr=TRV&lcIdClie=" + lcIdClie + "&lcIdTran=" + lmSlTran[0].toString().trim() + "&lcIdFili=1&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcPeQtde=" + lnPeQtde.toString().trim() + "&lcPeTota=" + lcPeTota + "&lcPeFret=" + lcPeFret + "&lcPeOrse=" + goSlTpsa.value.toString().trim() + "&lcPePdes=" + lcPePdes + "&lcPePdcp=" + goTxPdcp.value.toString().trim() + "&lcPeObse=" + goTaObse.value.toString().trim() + "&lcIdPedi=" + loPrInse.id_pedi + "&lcIdSitu=" + loPrInse.id_situ + "&lcPeNume=" + loPrInse.pe_nume + "&lcPePcom=" + lcPePcom + "&lcPePcot=" + lcPePcot + "&lcPeVdpr=" + lcPeVdpr + "&lcPeTlpr=" + lcPeTlpr + "&lcClVend=" + loPrInse.cl_vend.toString().trim() + "&lcP2Nume=" + loPrInse.p2_nume.toString().trim() + "&lcPeOpid=" + loPrInse.pe_opid.toString().trim(),
+            url: pcWsHttp + "insereProduto?lcIdEmpr=TRV&lcIdClie=" + goNrIdcl.value.toString().trim() + "&lcIdFili=1&lcPeNume=" + goNrOrca.value + "&lcDmCfab=" + goTxCfab.value + "&lcPeData=" + goDvData.innerHTML + "&lcMpQtde=" + goNrQtde.value + "&lcMpPrun=" + goNrPrun.value + "&lcMpPcus=" + gnDmPcus.toString().trim() + "&lcMpPvar=" + gnDmPvar.toString().trim() + "&lcMpPatc=" + gnDmPatc.toString().trim() + "&lcMpPdis=" + gnDmPdis.toString().trim() + "&lcMpPdes=" + lcMpPdes,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (llInProd) {
+                myApp.hideIndicator();
+
+                try {
+                    if (llInProd) { goTxCfab.focus(); }
+                    else { myApp.alert("ERRO AO INSERIR PRODUTO", "ERRO"); }
+                }
+                catch (loWkErro) { myApp.alert("ERRO AO INSERIR PRODUTO", "ERRO"); }
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO INSERIR PRODUTO", "ERRO");
+            }
+        });
+    }
+
+    function deletaProduto(lcDmCfab) {
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "deletaProduto?lcIdEmpr=TRV&lcIdFili=1&lcPeNume=" + goNrOrca.value + "&lcDmCfab=" + lcDmCfab + "&lcClVend=" + poCnVend.id_vend.toString().trim(),
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (llDlProd) {
+                myApp.hideIndicator();
+
+                try {
+                    if (llDlProd) { }
+                    else { myApp.alert("ERRO AO DELETAR PRODUTO", "ERRO"); }
+                }
+                catch (loWkErro) { myApp.alert("ERRO AO DELETAR PRODUTO", "ERRO"); }
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO DELETAR PRODUTO", "ERRO");
+            }
+        });
+    }
+
+    function atualizaPedido(lnPeQtde) {
+        myApp.showIndicator();
+        var lcIdClie = goNrIdcl.value.toString().trim();
+        var lcPePdes = ((parseFloat(goDvVdes.innerHTML.replace("R$ ", "").split(".").join("").replace(",", ".")) / parseFloat(goDvTpec.innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."))) * 100).toFixed(2).toString();
+        var lcPeTota = goDvTota.innerHTML.replace("R$ ", "").split(".").join("");
+        var lcPeFret = goNrFret.value.replace("R$ ", "").split(".").join("");
+        var lmSlTran = goSlTran.value.split("/");
+
+        $.ajax({
+            url: pcWsHttp + "atualizaPedido?lcIdEmpr=TRV&lcIdClie=" + lcIdClie + "&lcIdTran=" + lmSlTran[0].toString().trim() + "&lcPeQtde=" + lnPeQtde.toString().trim() + "&lcPeTota=" + lcPeTota + "&lcPeFret=" + lcPeFret + "&lcPeOrse=" + goSlTpsa.value.toString().trim() + "&lcPePdes=" + lcPePdes + "&lcPePdcp=" + goTxPdcp.value.toString().trim() + "&lcPeObse=" + goTaObse.value.toString().trim() + "&lcPeNume=" + goNrOrca.value,
             type: "GET",
             dataType: "jsonp",
             contentType: "application/json; charset=utf-8",
 
             success: function (llNvPedi) {
+                myApp.hideIndicator();
+
                 if (llNvPedi) {
                     limpaCampos();
 
-                    myApp.alert("PEDIDO INSERIDO COM SUCESSO", "SUCESSO");
+                    myApp.alert("ORDEM DE SEPARAÇÃO GERADA COM SUCESSO", "SUCESSO");
                 }
-                else { myApp.alert("ERRO AO INSERIR PEDIDO", "ERRO"); }
+                else { myApp.alert("ERRO AO GERAR ORDEM DE SEPARAÇÃO", "ERRO"); }
             },
-            error: function () { myApp.alert("ERRO AO INSERIR PEDIDO", "ERRO"); }
+            error: function () { myApp.alert("ERRO AO GERAR ORDEM DE SEPARAÇÃO", "ERRO"); }
+        });
+    }
+
+    function insereSeparacao() {
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "insereSeparacao?lcIdEmpr=TRV&lcIdFili=1&lcPeNume=" + goNrOrca.value + "&lcIdVend=" + poCnVend.id_vend.toString().trim(),
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (llInSepa) {
+                myApp.hideIndicator();
+
+                try {
+                    if (llInSepa) { }
+                    else { myApp.alert("ERRO AO GERAR ORDEM DE SEPARAÇÃO", "ERRO"); }
+                }
+                catch (loWkErro) { myApp.alert("ERRO AO GERAR ORDEM DE SEPARAÇÃO", "ERRO"); }
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO GERAR ORDEM DE SEPARAÇÃO", "ERRO");
+            }
         });
     }
 
     function limpaCampos() {
+        ldDtHoje = new Date();
+
+        goDvData.innerHTML = objetoDataParaStringData(ldDtHoje);
+
         goNrOrca.value = "";
 
         limpaCamposCliente();
@@ -647,6 +778,16 @@
                 <div id="divQtes" class="item-after"></div>
             </div>
         </li>
+        <li style="display: none;">
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">PR. DIST.</div>
+                    <div class="item-input">
+                        <div id="divPdis" class="item-after"></div>
+                    </div>
+                </div>
+            </div>
+        </li>
         <li>
             <div class="item-content">
                 <div class="item-inner">
@@ -679,6 +820,7 @@
 <div id="divMvpr" class="content-block">
     <div id="divCabe" style="display: none;" class="row no-gutter">
         <div class='col-auto'><b>CÓD. FABR.</b></div>
+        <div class='col-auto'><b>ESTOQUE</b></div>
         <div class='col-auto'><b>QTDE</b></div>
         <div class='col-auto'><b>PR. UNIT.</b></div>
         <div class='col-auto'><b>TOTAL</b></div>
@@ -787,7 +929,7 @@
     var goTxPdcp = document.getElementById("txtPdcp");
     var goTaObse = document.getElementById("txaObse");
     var ldDtHoje = new Date();
-    var gnDmPdes = 100, gnDmPvar = 0, gnDmQemb = 0, gnDmQtpr = 0, gnDmProm = 0, gnWkPrun = 0;
+    var gnDmPdes = 100, gnDmPvar = 0, gnDmQemb = 0, gnDmQtpr = 0, gnDmProm = 0, gnWkPrun = 0, gnDmPcus = 0, gnDmPatc = 0, gnDmPdis = 0;
 
     $(document).ready(function () {
         goDvData.innerHTML = objetoDataParaStringData(ldDtHoje);

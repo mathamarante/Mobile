@@ -132,7 +132,7 @@
                     </ul>
                 </div>
                 <p class="buttons-row">
-                    <a href="#" onclick="consultaVendedor();" class="button button-fill button-raised">ENTRAR</a>
+                    <a id="ahrEntr" href="#" onclick="consultaVendedor();" class="button button-fill button-raised">ENTRAR</a>
                 </p>
             </div>
         </div>
@@ -143,15 +143,21 @@
     <script type="text/javascript" src="../framework7/js/my-app.js"></script>
     <script type="text/javascript" src="../js/jquery-2.1.4.min.js"></script>
     <script type="text/javascript" src="../js/md5.min.js"></script>
+    <script type="text/javascript" src="../js/script.js"></script>
     <script>
         var goVdFant = document.getElementById("txtUsua");
         var goVdSenh = document.getElementById("txtSenh");
-        var gcWsHttp = "http://localhost/VS2013/ERP/Trv/WebService/Application/Service.svc/";
+        //var gcWsHttp = "http://localhost/VS2013/ERP/Trv/WebService/Application/Service.svc/";
         //var gcWsHttp = "http://192.168.5.216/ERP/Trv/WebService/Service.svc/";
-        //var gcWsHttp = "http://trevao.clientebasetech.com:6601/WebService/Service.svc/";
+        var gcWsHttp = "http://trevao.clientebasetech.com:6601/WebService/Service.svc/";
 
         var myApp = new Framework7({
             material: true
+        });
+
+        $(document).ready(function () {
+            OkTecladoAndroid2("txtUsua", "txtSenh");
+            OkTecladoAndroid3("txtSenh", "ahrEntr", "ahrEntr");
         });
     </script>
 </body>

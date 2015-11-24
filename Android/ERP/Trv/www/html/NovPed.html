@@ -33,17 +33,25 @@
 
                         document.getElementById("divCabe").style.display = "";
 
-                        var lcPdMvpr = "";
+                        var lcPdMvpr = "", lcRdStyl = "";
 
                         lcPdMvpr = $("#divMvpr").html();
 
+                        var lnQtSald = 0;
+
                         for (var x = 0; x < lmCnOrca.length; x++) {
+                            if (lmCnOrca[x].qt_sald < 0) { lnQtSald = 0; }
+                            else { lnQtSald = lmCnOrca[x].qt_sald; }
+
+                            if (lmCnOrca[x].mp_qtde > lnQtSald) { lcRdStyl = "style='color: red;'"; }
+
                             lcPdMvpr += "<div id='div" + lmCnOrca[x].dm_cfab.toString().trim() + "' class='row no-gutter pedimvpr'>";
-                            lcPdMvpr += "<div class='col-auto'>" + lmCnOrca[x].dm_cfab.toString().trim() + "</div>";
-                            lcPdMvpr += "<div class='col-auto'>" + lmCnOrca[x].mp_qtde.toString().trim() + "<span style='display: none;'>" + goDvQtes.innerHTML.trim() + "</span></div>";
-                            lcPdMvpr += "<div class='col-auto'>" + brMoney(lmCnOrca[x].mp_prun.toString().trim()) + "</div>";
-                            lcPdMvpr += "<div class='col-auto'>" + brMoney(parseFloat(lmCnOrca[x].mp_qtde) * parseFloat(lmCnOrca[x].mp_prun)) + "</div>";
-                            lcPdMvpr += "<div class='col-auto'>" + brDecimal(lmCnOrca[x].mp_pdes) + "</div>";
+                            lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + lmCnOrca[x].dm_cfab.toString().trim() + "</div>";
+                            lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + lnQtSald.toString().trim() + "</div>";
+                            lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + lmCnOrca[x].mp_qtde.toString().trim() + "</div>";
+                            lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brMoney(lmCnOrca[x].mp_prun.toString().trim()) + "</div>";
+                            lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brMoney(parseFloat(lmCnOrca[x].mp_qtde) * parseFloat(lmCnOrca[x].mp_prun)) + "</div>";
+                            lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brDecimal(lmCnOrca[x].mp_pdes) + "</div>";
                             lcPdMvpr += "<div class='col-auto'><a href='#' onclick='removeProdutoPedido(\"" + lmCnOrca[x].dm_cfab.toString().trim() + "\")' class='button button-fill color-red'>REMOVER</a></div>";
                             lcPdMvpr += "</div>";
                         }
@@ -393,16 +401,19 @@
 
         document.getElementById("divCabe").style.display = "";
 
-        var lcPdMvpr = "";
+        var lcPdMvpr = "", lcRdStyl = "";
+
+        if (parseFloat(goNrQtde.value) > parseFloat(goDvQtes.innerHTML)) { lcRdStyl = "style='color: red;'"; }
 
         lcPdMvpr = $("#divMvpr").html();
 
         lcPdMvpr += "<div id='div" + goTxCfab.value.toString().trim() + "' class='row no-gutter pedimvpr'>";
-        lcPdMvpr += "<div class='col-auto'>" + goTxCfab.value.toString().trim() + "</div>";
-        lcPdMvpr += "<div class='col-auto'>" + goNrQtde.value.toString().trim() + "<span style='display: none;'>" + goDvQtes.innerHTML.trim() + "</span></div>";
-        lcPdMvpr += "<div class='col-auto'>" + brMoneyCasasDecimais(goNrPrun.value.toString().trim()) + "</div>";
-        lcPdMvpr += "<div class='col-auto'>" + brMoney(goNrQtde.value * goNrPrun.value) + "</div>";
-        lcPdMvpr += "<div class='col-auto'>" + brDecimal(goNrPdes.value) + "</div>";
+        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + goTxCfab.value.toString().trim() + "</div>";
+        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + goDvQtes.innerHTML.trim() + "</div>";
+        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + goNrQtde.value.toString().trim() + "</div>";
+        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brMoneyCasasDecimais(goNrPrun.value.toString().trim()) + "</div>";
+        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brMoney(goNrQtde.value * goNrPrun.value) + "</div>";
+        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brDecimal(goNrPdes.value) + "</div>";
         lcPdMvpr += "<div class='col-auto'><a href='#' onclick='removeProdutoPedido(\"" + goTxCfab.value.toString().trim() + "\")' class='button button-fill color-red'>REMOVER</a></div>";
         lcPdMvpr += "</div>";
 
@@ -431,8 +442,8 @@
 
         $("#divMvpr > div").each(function () {
             if (this.id != "divCabe") {
-                lnClTota = parseFloat($("#" + this.id + " > div")[3].innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."));
-                lnClPdes = parseFloat($("#" + this.id + " > div")[4].innerHTML.split(".").join("").replace(",", "."));
+                lnClTota = parseFloat($("#" + this.id + " > div")[4].innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."));
+                lnClPdes = parseFloat($("#" + this.id + " > div")[5].innerHTML.split(".").join("").replace(",", "."));
 
                 lnToPeca += lnClTota;
                 lnVlDesc += lnClTota * (lnClPdes / 100);
@@ -510,21 +521,23 @@
 
         var lnWkQtes = 0, lnWkQtde = 0, lnPeQtde = 0;
         var llFlRtrn = false;
+        var lcDmCfab = "";
 
         $("#divMvpr > div").each(function () {
             if (this.id != "divCabe") {
-                lnWkQtes = parseInt($("#" + this.id + " > div > span")[0].innerHTML);
-                lnWkQtde = parseInt($("#" + this.id + " > div")[1].innerHTML.replace(/(^\d+)(.+$)/i, '$1'));
+                lnWkQtes = parseInt($("#" + this.id + " > div")[1].innerHTML);
+                lnWkQtde = parseInt($("#" + this.id + " > div")[2].innerHTML);
+                lcDmCfab = $("#" + this.id + " > div")[0].innerHTML;
                 lnPeQtde += lnWkQtde;
 
                 if (lnWkQtde > lnWkQtes && parseInt(goSlTpsa.value) != 4) {
-                    myApp.alert("ITENS COM ESTOQUE INSUFICIENTE, ESCOLHA COMPRA NA PRAÇA", "ERRO");
+                    myApp.alert("ITEM " + lcDmCfab + " COM ESTOQUE INSUFICIENTE, ESCOLHA COMPRA NA PRAÇA", "ERRO");
 
                     llFlRtrn = true;
                 }
 
                 if (lnWkQtde <= lnWkQtes && parseInt(goSlTpsa.value) == 4) {
-                    myApp.alert("ITENS COM ESTOQUE, NÃO PERMITIDO COMPRA NA PRAÇA", "ERRO");
+                    myApp.alert("ITEM " + lcDmCfab + " COM ESTOQUE, NÃO PERMITIDO COMPRA NA PRAÇA", "ERRO");
 
                     llFlRtrn = true;
                 }
@@ -534,6 +547,7 @@
         if (llFlRtrn) { return; }
 
         atualizaPedido(lnPeQtde);
+        insereSeparacao();
     }
 
     function inserePedido() {
@@ -566,8 +580,13 @@
     function insereProduto() {
         myApp.showIndicator();
 
+        var lcMpPdes = "";
+
+        if (goNrPdes.value.trim() == "") { lcMpPdes = "0"; }
+        else { lcMpPdes = goNrPdes.value.trim(); }
+
         $.ajax({
-            url: pcWsHttp + "insereProduto?lcIdEmpr=TRV&lcIdClie=" + goNrIdcl.value.toString().trim() + "&lcIdFili=1&lcPeNume=" + goNrOrca.value + "&lcDmCfab=" + goTxCfab.value + "&lcPeData=" + goDvData.innerHTML + "&lcMpQtde=" + goNrQtde.value.replace(".", ",") + "&lcMpPrun=" + goNrPrun.value.replace(".", ",") + "&lcMpPcus=" + gnDmPcus.toString().trim().replace(".", ",") + "&lcMpPvar=" + gnDmPvar.toString().trim().replace(".", ",") + "&lcMpPatc=" + gnDmPatc.toString().trim().replace(".", ",") + "&lcMpPdis=" + gnDmPdis.toString().trim().replace(".", ",") + "&lcMpPdes=" + goNrPdes.value.replace(".", ","),
+            url: pcWsHttp + "insereProduto?lcIdEmpr=TRV&lcIdClie=" + goNrIdcl.value.toString().trim() + "&lcIdFili=1&lcPeNume=" + goNrOrca.value + "&lcDmCfab=" + goTxCfab.value + "&lcPeData=" + goDvData.innerHTML + "&lcMpQtde=" + goNrQtde.value + "&lcMpPrun=" + goNrPrun.value + "&lcMpPcus=" + gnDmPcus.toString().trim() + "&lcMpPvar=" + gnDmPvar.toString().trim() + "&lcMpPatc=" + gnDmPatc.toString().trim() + "&lcMpPdis=" + gnDmPdis.toString().trim() + "&lcMpPdes=" + lcMpPdes,
             type: "GET",
             dataType: "jsonp",
             contentType: "application/json; charset=utf-8",
@@ -616,7 +635,7 @@
     function atualizaPedido(lnPeQtde) {
         myApp.showIndicator();
         var lcIdClie = goNrIdcl.value.toString().trim();
-        var lcPePdes = ((parseFloat(goDvVdes.innerHTML.replace("R$ ", "").split(".").join("").replace(",", ".")) / parseFloat(goDvTpec.innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."))) * 100).toFixed(2).toString().replace(".", ",");
+        var lcPePdes = ((parseFloat(goDvVdes.innerHTML.replace("R$ ", "").split(".").join("").replace(",", ".")) / parseFloat(goDvTpec.innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."))) * 100).toFixed(2).toString();
         var lcPeTota = goDvTota.innerHTML.replace("R$ ", "").split(".").join("");
         var lcPeFret = goNrFret.value.replace("R$ ", "").split(".").join("");
         var lmSlTran = goSlTran.value.split("/");
@@ -638,6 +657,31 @@
                 else { myApp.alert("ERRO AO GERAR ORDEM DE SEPARAÇÃO", "ERRO"); }
             },
             error: function () { myApp.alert("ERRO AO GERAR ORDEM DE SEPARAÇÃO", "ERRO"); }
+        });
+    }
+
+    function insereSeparacao() {
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "insereSeparacao?lcIdEmpr=TRV&lcIdFili=1&lcPeNume=" + goNrOrca.value + "&lcIdVend=" + poCnVend.id_vend.toString().trim(),
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (llInSepa) {
+                myApp.hideIndicator();
+
+                try {
+                    if (llInSepa) { }
+                    else { myApp.alert("ERRO AO GERAR ORDEM DE SEPARAÇÃO", "ERRO"); }
+                }
+                catch (loWkErro) { myApp.alert("ERRO AO GERAR ORDEM DE SEPARAÇÃO", "ERRO"); }
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO GERAR ORDEM DE SEPARAÇÃO", "ERRO");
+            }
         });
     }
 
@@ -776,6 +820,7 @@
 <div id="divMvpr" class="content-block">
     <div id="divCabe" style="display: none;" class="row no-gutter">
         <div class='col-auto'><b>CÓD. FABR.</b></div>
+        <div class='col-auto'><b>ESTOQUE</b></div>
         <div class='col-auto'><b>QTDE</b></div>
         <div class='col-auto'><b>PR. UNIT.</b></div>
         <div class='col-auto'><b>TOTAL</b></div>
