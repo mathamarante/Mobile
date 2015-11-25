@@ -134,6 +134,9 @@
                 <p class="buttons-row">
                     <a id="ahrEntr" href="#" onclick="consultaVendedor();" class="button button-fill button-raised">ENTRAR</a>
                 </p>
+                <p class="buttons-row">
+                    <a id="ahrOffl" href="#" onclick="window.location = 'OffLay.html';" class="button button-fill button-raised">TRABALHAR OFFLINE</a>
+                </p>
             </div>
         </div>
     </div>
@@ -147,9 +150,9 @@
     <script>
         var goVdFant = document.getElementById("txtUsua");
         var goVdSenh = document.getElementById("txtSenh");
-        //var gcWsHttp = "http://localhost/VS2013/ERP/Trv/WebService/Application/Service.svc/";
+        var gcWsHttp = "http://localhost/VS2013/ERP/Trv/WebService/Application/Service.svc/";
         //var gcWsHttp = "http://192.168.5.216/ERP/Trv/WebService/Service.svc/";
-        var gcWsHttp = "http://trevao.clientebasetech.com:6601/WebService/Service.svc/";
+        //var gcWsHttp = "http://trevao.clientebasetech.com:6601/WebService/Service.svc/";
 
         var myApp = new Framework7({
             material: true

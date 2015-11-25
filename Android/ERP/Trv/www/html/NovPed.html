@@ -44,6 +44,7 @@
                             else { lnQtSald = lmCnOrca[x].qt_sald; }
 
                             if (lmCnOrca[x].mp_qtde > lnQtSald) { lcRdStyl = "style='color: red;'"; }
+                            else { lcRdStyl = ""; }
 
                             lcPdMvpr += "<div id='div" + lmCnOrca[x].dm_cfab.toString().trim() + "' class='row no-gutter pedimvpr'>";
                             lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + lmCnOrca[x].dm_cfab.toString().trim() + "</div>";
@@ -776,16 +777,6 @@
             <div class="item-inner">
                 <div class="item-title">ESTOQUE</div>
                 <div id="divQtes" class="item-after"></div>
-            </div>
-        </li>
-        <li style="display: none;">
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-title label" style="color: red;">PR. DIST.</div>
-                    <div class="item-input">
-                        <div id="divPdis" class="item-after"></div>
-                    </div>
-                </div>
             </div>
         </li>
         <li>
