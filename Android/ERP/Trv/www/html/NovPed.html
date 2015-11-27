@@ -430,7 +430,7 @@
 
         calculaTotal();
 
-        deletaProduto(lcDmCfab);
+        if (goNrOrca.value.trim() != "") { deletaProduto(lcDmCfab); }
     }
 
     function calculaTotal() {

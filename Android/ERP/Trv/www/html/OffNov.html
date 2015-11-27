@@ -17,15 +17,15 @@
         var lmPdMvpr = JSON.parse(localStorage.getItem("mUPdMvpr"));
         var lmCnOrca = [];
 
-        for (var i = 0; i < lmPdMvpr.length; i++) {
-            if (lmPdMvpr[i].pe_nume == parseInt(goNrOrca.value)) { lmCnOrca.push(lmPdMvpr[i]); }
-        }
-
         try {
+
+            for (var i = 0; i < lmPdMvpr.length; i++) {
+                if (lmPdMvpr[i].pe_nume == parseInt(goNrOrca.value)) { lmCnOrca.push(lmPdMvpr[i]); }
+            }
+
             if (lmCnOrca.length > 0) {
                 goDvData.innerHTML = lmCnOrca[0].pe_data;
                 goNrClie.value = lmCnOrca[0].id_clie;
-                goNrClie.onblur();
 
                 document.getElementById("divCabe").style.display = "";
 
@@ -73,7 +73,7 @@
         goNrPrun.value = "";
         goNrPdes.value = "";
     }
-    //------------CONTINUAR
+
     function adicionaProdutoPedido() {
         if (parseInt(goNrClie.value) > 0) { }
         else {
@@ -102,51 +102,34 @@
             return;
         }
 
-        if (parseFloat(goNrPdes.value) > gnDmPdes) {
-            myApp.alert("DESCONTO ACIMA DO AUTORIZADO", "ALERTA");
-            goNrPdes.value = "";
-
-            return;
-        }
-
-        if (parseFloat(goNrPdes.value) > 0 && parseFloat(goNrQtde.value) > parseFloat(goDvQtes.innerHTML)) {
-            goNrPdes.value = "";
-
-            myApp.alert("PRODUTO COMPRA NA PRAÇA % DESCONTO ZERO", "ERRO");
-
-            return;
-        }
-
         if (document.getElementById("div" + goTxCfab.value.toString().trim())) {
             goTxCfab.focus();
 
             return;
         }
 
-        if (goNrOrca.value.trim() == "") { inserePedido(); }
-        else { insereProduto(); }
+        insereProduto();
 
         document.getElementById("divCabe").style.display = "";
 
-        var lcPdMvpr = "", lcRdStyl = "";
-
-        if (parseFloat(goNrQtde.value) > parseFloat(goDvQtes.innerHTML)) { lcRdStyl = "style='color: red;'"; }
+        var lcPdMvpr = "";
 
         lcPdMvpr = $("#divMvpr").html();
 
         lcPdMvpr += "<div id='div" + goTxCfab.value.toString().trim() + "' class='row no-gutter pedimvpr'>";
-        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + goTxCfab.value.toString().trim() + "</div>";
-        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + goDvQtes.innerHTML.trim() + "</div>";
-        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + goNrQtde.value.toString().trim() + "</div>";
-        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brMoneyCasasDecimais(goNrPrun.value.toString().trim()) + "</div>";
-        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brMoney(goNrQtde.value * goNrPrun.value) + "</div>";
-        lcPdMvpr += "<div " + lcRdStyl + " class='col-auto'>" + brDecimal(goNrPdes.value) + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + goTxCfab.value.toString().trim() + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + goNrQtde.value.toString().trim() + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + brMoneyCasasDecimais(goNrPrun.value.toString().trim()) + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + brMoney(goNrQtde.value * goNrPrun.value) + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + brDecimal(goNrPdes.value) + "</div>";
         lcPdMvpr += "<div class='col-auto'><a href='#' onclick='removeProdutoPedido(\"" + goTxCfab.value.toString().trim() + "\")' class='button button-fill color-red'>REMOVER</a></div>";
         lcPdMvpr += "</div>";
 
         $("#divMvpr").html(lcPdMvpr).show();
 
         calculaTotal();
+
+        goTxCfab.focus();
     }
 
     function removeProdutoPedido(lcDmCfab) {
@@ -156,41 +139,88 @@
 
         calculaTotal();
 
-        deletaProduto(lcDmCfab);
+        if (goNrOrca.value.trim() != "") { deletaProduto(lcDmCfab); }
     }
 
     function calculaTotal() {
-        var lnToPeca = 0, lnVlDesc = 0, lnClTota = 0, lnClPdes = 0, lnVlFret = 0, lnPeTota = 0;
-
-        lnVlFret = parseFloat(goNrFret.value.replace("R$ ", "").split(".").join("").replace(",", "."));
-
-        if (lnVlFret > 0) { }
-        else { lnVlFret = 0; }
+        var lnToPeca = 0, lnVlDesc = 0, lnClTota = 0, lnClPdes = 0;
 
         $("#divMvpr > div").each(function () {
             if (this.id != "divCabe") {
-                lnClTota = parseFloat($("#" + this.id + " > div")[4].innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."));
-                lnClPdes = parseFloat($("#" + this.id + " > div")[5].innerHTML.split(".").join("").replace(",", "."));
+                lnClTota = parseFloat($("#" + this.id + " > div")[3].innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."));
+                lnClPdes = parseFloat($("#" + this.id + " > div")[4].innerHTML.split(".").join("").replace(",", "."));
 
                 lnToPeca += lnClTota;
                 lnVlDesc += lnClTota * (lnClPdes / 100);
             }
         });
 
-        lnPeTota = lnToPeca - lnVlDesc + lnVlFret;
-
         if (lnToPeca > 0) {
             goDvTpec.innerHTML = brMoney(lnToPeca);
             goDvVdes.innerHTML = brMoney(lnVlDesc);
-            goDvTota.innerHTML = brMoney(lnPeTota);
         }
         else {
             goDvTpec.innerHTML = "";
             goDvVdes.innerHTML = "";
-
-            if (lnVlFret > 0) { goDvTota.innerHTML = brMoney(lnVlFret); }
-            else { goDvTota.innerHTML = ""; }
         }
+    }
+
+    function insereProduto() {
+        try {
+            var lmPdMvpr = JSON.parse(localStorage.getItem("mUPdMvpr"));
+
+            if (!lmPdMvpr) {
+                lmPdMvpr = [];
+            }
+
+            var lnPeNume = 0;
+
+            if (goNrOrca.value.trim() == "") {
+                for (var x = 0; x < lmPdMvpr.length; x++) {
+                    if (lmPdMvpr[x].pe_nume > lnPeNume) { lnPeNume = lmPdMvpr[x].pe_nume; }
+                }
+
+                lnPeNume++;
+
+                goNrOrca.value = lnPeNume.toString().trim();
+            }
+            else { lnPeNume = parseInt(goNrOrca.value); }
+
+            var lnMpPdes = 0;
+
+            if (goNrPdes.value.trim() == "") { lnMpPdes = 0; }
+            else { lnMpPdes = parseFloat(goNrPdes.value); }
+
+            var loPdMvpr = { pe_data: goDvData.innerHTML.trim(), pe_nume: lnPeNume, id_clie: parseInt(goNrClie.value), dm_cfab: goTxCfab.value, mp_qtde: parseFloat(goNrQtde.value), mp_prun: parseFloat(goNrPrun.value), mp_pdes: lnMpPdes };
+
+            lmPdMvpr.push(loPdMvpr);
+
+            lmPdMvpr.sort(function (a, b) {
+                return parseInt(a.pe_nume) - parseInt(b.pe_nume);
+            });
+
+            localStorage.setItem("mUPdMvpr", JSON.stringify(lmPdMvpr));
+        }
+        catch (loWkErro) {
+            var lmPdMvpr = [];
+
+            lmPdMvpr.push(loPdMvpr);
+
+            localStorage.setItem("mUPdMvpr", JSON.stringify(lmPdMvpr));
+        }
+    }
+
+    function deletaProduto(lcDmCfab) {
+        var lmPdMvpr = JSON.parse(localStorage.getItem("mUPdMvpr"));
+
+        for (var x = 0; x < lmPdMvpr.length; x++) {
+            if (lmPdMvpr[x].dm_cfab.trim() == lcDmCfab.trim()) {
+                lmPdMvpr.splice(x, 1);
+                break;
+            }
+        }
+
+        localStorage.setItem("mUPdMvpr", JSON.stringify(lmPdMvpr));
     }
 
     function limpaCampos() {
@@ -202,12 +232,6 @@
 
         limpaCamposCliente();
         limpaCamposProduto();
-
-        goSlTpsa.value = 1;
-        goSlTran.value = 0;
-        goNrFret.value = "";
-        goTxPdcp.value = "";
-        goTaObse.value = "";
 
         $("#divMvpr > div").each(function () {
             if (this.id != "divCabe") { removeProdutoPedido($("#" + this.id + " > div")[0].innerHTML.trim()); }
@@ -251,7 +275,7 @@
                 <div class="item-inner">
                     <div class="item-title label" style="color: red;">CÓD. FABR.</div>
                     <div class="item-input">
-                        <input id="txtCfab" type="text" placeholder="DIGITE O CÓDIGO DO FABRICANTE" onfocus="limpaCamposProduto();" />
+                        <input id="txtCfab" type="text" placeholder="DIGITE O CÓDIGO DO FABRICANTE" onfocus="limpaCamposProduto();" onblur="this.value = this.value.toUpperCase();" />
                     </div>
                 </div>
             </div>
@@ -332,6 +356,7 @@
         goDvData.innerHTML = objetoDataParaStringData(ldDtHoje);
 
         OkTecladoAndroid2("numOrca", "numClie");
+        OkTecladoAndroid2("numClie", "txtCfab");
         OkTecladoAndroid2("txtCfab", "numQtde");
         OkTecladoAndroid2("numQtde", "numPrun");
         OkTecladoAndroid2("numPrun", "numPdes");
