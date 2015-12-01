@@ -1,13 +1,13 @@
 ﻿<script>
     function consultaOrcamento() {
-        myApp.showIndicator();
+        if (goNrOrca.value.toString().trim() == "") { return; }
 
-        if (goNrOrca.value == 0) {
+        if (parseInt(goNrOrca.value) == 0) {
             myApp.hideIndicator();
             limpaCampos();
             return;
         }
-        else if (goNrOrca.value >= 1) { }
+        else if (parseInt(goNrOrca.value) >= 1) { }
         else {
             myApp.hideIndicator();
             limpaCampos();
@@ -15,6 +15,13 @@
 
             return;
         }
+
+        //if (parseInt(goNrOrca.value) < 1500000) {
+        //    consultaOrcamentoOffline();
+        //    return;
+        //}
+
+        myApp.showIndicator();
 
         $.ajax({
             url: pcWsHttp + "consultaOrcamento?lcIdEmpr=TRV&lcIdFili=1&lcPeNume=" + goNrOrca.value.toString().trim() + "&lcClVend=" + poCnVend.id_vend.toString().trim(),
@@ -28,8 +35,8 @@
                 try {
                     if (lmCnOrca.length > 0) {
                         goDvData.innerHTML = jsonDate(lmCnOrca[0].pe_data);
-                        goNrIdcl.value = lmCnOrca[0].id_clie;
-                        goNrIdcl.onblur();
+                        goNrClie.value = lmCnOrca[0].id_clie;
+                        goNrClie.onblur();
 
                         document.getElementById("divCabe").style.display = "";
 
@@ -122,11 +129,11 @@
     function consultaInformacoesCliente() {
         goTxCfab.focus();
 
-        if (goNrIdcl.value == 0) {
+        if (goNrClie.value == 0) {
             limpaCamposCliente();
             return;
         }
-        else if (goNrIdcl.value >= 1) { }
+        else if (goNrClie.value >= 1) { }
         else {
             limpaCamposCliente();
             myApp.alert("CÓDIGO DO CLIENTE INVÁLIDO", "ERRO");
@@ -135,7 +142,7 @@
         }
 
         try {
-            goSlClie.value = goNrIdcl.value;
+            goSlClie.value = goNrClie.value;
 
             if (goSlClie.options[goSlClie.selectedIndex].innerHTML == "") {
                 limpaCamposCliente();
@@ -149,7 +156,7 @@
     }
 
     function limpaCamposCliente() {
-        goNrIdcl.value = "";
+        goNrClie.value = "";
         goSlClie.value = 0;
     }
 
@@ -307,7 +314,7 @@
     //}
 
     function consultaValorUltimaVenda(lcIdDmat) {
-        var lcIdClie = goNrIdcl.value.toString().trim();
+        var lcIdClie = goNrClie.value.toString().trim();
 
         if (lcIdClie == "") { return; }
 
@@ -349,7 +356,7 @@
     }
 
     function adicionaProdutoPedido() {
-        if (parseInt(goNrIdcl.value) > 0) { }
+        if (parseInt(goNrClie.value) > 0) { }
         else {
             myApp.alert("CÓDIGO DO CLIENTE INVÁLIDO", "ERRO");
 
@@ -507,7 +514,7 @@
     }
 
     function geraOrdemSeparacao() {
-        if (parseInt(goNrIdcl.value) > 0) { }
+        if (parseInt(goNrClie.value) > 0) { }
         else {
             myApp.alert("CÓDIGO DO CLIENTE INVÁLIDO", "ERRO");
 
@@ -553,7 +560,7 @@
 
     function inserePedido() {
         myApp.showIndicator();
-        var lcIdClie = goNrIdcl.value.toString().trim();
+        var lcIdClie = goNrClie.value.toString().trim();
 
         $.ajax({
             url: pcWsHttp + "inserePedido?lcIdEmpr=TRV&lcIdClie=" + lcIdClie + "&lcIdFili=1&lcIdVend=" + poCnVend.id_vend.toString().trim(),
@@ -587,7 +594,7 @@
         else { lcMpPdes = goNrPdes.value.trim(); }
 
         $.ajax({
-            url: pcWsHttp + "insereProduto?lcIdEmpr=TRV&lcIdClie=" + goNrIdcl.value.toString().trim() + "&lcIdFili=1&lcPeNume=" + goNrOrca.value + "&lcDmCfab=" + goTxCfab.value + "&lcPeData=" + goDvData.innerHTML + "&lcMpQtde=" + goNrQtde.value + "&lcMpPrun=" + goNrPrun.value + "&lcMpPcus=" + gnDmPcus.toString().trim() + "&lcMpPvar=" + gnDmPvar.toString().trim() + "&lcMpPatc=" + gnDmPatc.toString().trim() + "&lcMpPdis=" + gnDmPdis.toString().trim() + "&lcMpPdes=" + lcMpPdes,
+            url: pcWsHttp + "insereProduto?lcIdEmpr=TRV&lcIdClie=" + goNrClie.value.toString().trim() + "&lcIdFili=1&lcPeNume=" + goNrOrca.value + "&lcDmCfab=" + goTxCfab.value + "&lcPeData=" + goDvData.innerHTML + "&lcMpQtde=" + goNrQtde.value + "&lcMpPrun=" + goNrPrun.value + "&lcMpPcus=" + gnDmPcus.toString().trim() + "&lcMpPvar=" + gnDmPvar.toString().trim() + "&lcMpPatc=" + gnDmPatc.toString().trim() + "&lcMpPdis=" + gnDmPdis.toString().trim() + "&lcMpPdes=" + lcMpPdes,
             type: "GET",
             dataType: "jsonp",
             contentType: "application/json; charset=utf-8",
@@ -635,7 +642,7 @@
 
     function atualizaPedido(lnPeQtde) {
         myApp.showIndicator();
-        var lcIdClie = goNrIdcl.value.toString().trim();
+        var lcIdClie = goNrClie.value.toString().trim();
         var lcPePdes = ((parseFloat(goDvVdes.innerHTML.replace("R$ ", "").split(".").join("").replace(",", ".")) / parseFloat(goDvTpec.innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."))) * 100).toFixed(2).toString();
         var lcPeTota = goDvTota.innerHTML.replace("R$ ", "").split(".").join("");
         var lcPeFret = goNrFret.value.replace("R$ ", "").split(".").join("");
@@ -709,198 +716,209 @@
 
     //@ sourceURL=NovPed1.js
 </script>
-<div class="list-block">
-    <ul>
-        <li class="item-content">
-            <div class="item-inner">
-                <div class="item-title">DATA PEDIDO</div>
-                <div id="divData" class="item-after"></div>
-            </div>
-        </li>
-        <li>
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-title label">ORÇAMENTO</div>
-                    <div class="item-input">
-                        <input id="numOrca" type="number" min="1" step="1" placeholder="DIGITE O NÚMERO DO ORÇAMENTO" onfocus="limpaCampos();" onblur="consultaOrcamento();">
-                    </div>
-                </div>
-            </div>
-        </li>
-        <li class="item-divider">CLIENTE</li>
-        <li>
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-title label" style="color: red;">CÓD. CLIENTE</div>
-                    <div class="item-input">
-                        <input id="numIdcl" type="number" min="1" step="1" placeholder="DIGITE O CÓDIGO DO CLIENTE" onblur="consultaInformacoesCliente();" onfocus="limpaCamposCliente();">
-                    </div>
-                </div>
-            </div>
-        </li>
-        <li>
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-input">
-                        <select id="sltClie" disabled="disabled" style="" onchange="if (this.value >= 1) { goNrIdcl.value = this.value; } else { limpaCamposCliente(); }"></select>
-                    </div>
-                </div>
-            </div>
-        </li>
-        <li class="item-divider">PRODUTO</li>
-        <li>
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-title label" style="color: red;">CÓD. FABR.</div>
-                    <div class="item-input">
-                        <input id="txtCfab" type="text" placeholder="DIGITE O CÓDIGO DO FABRICANTE" onblur="consultaProduto();" onfocus="limpaCamposProduto();" />
-                    </div>
-                </div>
-            </div>
-        </li>
-        <li class="item-content">
-            <div class="item-inner">
-                <div id="divDeno" class="item-after" style="margin-left: auto;"></div>
-            </div>
-        </li>
-        <li>
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-title label" style="color: red;">QTDE</div>
-                    <div class="item-input">
-                        <input id="numQtde" type="number" min="0.01" placeholder="DIGITE O QUANTIDADE DO PRODUTO( EX: 9999,99 )" onblur="verificaQuantidade();">
-                    </div>
-                </div>
-            </div>
-        </li>
-        <li class="item-content">
-            <div class="item-inner">
-                <div class="item-title">ESTOQUE</div>
-                <div id="divQtes" class="item-after"></div>
-            </div>
-        </li>
-        <li>
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-title label" style="color: red;">PR. UNIT.</div>
-                    <div class="item-input">
-                        <input id="numPrun" type="number" min="0.01" placeholder="DIGITE O PREÇO DO PRODUTO( EX: 9999,99 )" onblur="verificaPreco();"> <!--onkeyup="calculaPercentualDesconto();"-->
-                    </div>
-                </div>
-            </div>
-        </li>
-        <li>
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-title label">% DESC.</div>
-                    <div class="item-input">
-                        <input id="numPdes" type="number" min="0.01" max="99.99" placeholder="DIGITE A % DESCONTO DO PRODUTO( EX: 99,99 )"> <!--onkeyup="calculaPrecoComDesconto();"-->
-                    </div>
-                </div>
-            </div>
-        </li>
-        <li class="item-content">
-            <div class="item-inner">
-                <div class="item-title">VLR ULT. VDA</div>
-                <div id="divUvda" class="item-after"></div>
-            </div>
-        </li>
-    </ul>
-</div>
-<a href="#" id="ahrAdic" onclick="adicionaProdutoPedido();" class="button button-fill button-raised">ADICIONAR PRODUTO</a>
-<div id="divMvpr" class="content-block">
-    <div id="divCabe" style="display: none;" class="row no-gutter">
-        <div class='col-auto'><b>CÓD. FABR.</b></div>
-        <div class='col-auto'><b>ESTOQUE</b></div>
-        <div class='col-auto'><b>QTDE</b></div>
-        <div class='col-auto'><b>PR. UNIT.</b></div>
-        <div class='col-auto'><b>TOTAL</b></div>
-        <div class='col-auto'><b>% DESC.</b></div>
-        <div class='col-auto'></div>
+<div class="content-block">
+    <div class="buttons-row">
+        <a href="#NovPed" class="tab-link active button">NOVO PEDIDO</a>
+        <a href="#ConPec" class="tab-link button">CONSULTA PEÇA</a>
     </div>
 </div>
-<div class="list-block">
-    <ul>
-        <li class="item-content">
-            <div class="item-inner">
-                <div class="item-title">TOTAL PEÇAS</div>
-                <div id="divTpec" class="item-after"></div>
-            </div>
-        </li>
-        <li class="item-content">
-            <div class="item-inner">
-                <div class="item-title">DESCONTO</div>
-                <div id="divVdes" class="item-after"></div>
-            </div>
-        </li>
-        <li class="item-divider">ORDEM DE SEPARAÇÃO</li>
-        <li>
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-input">
-                        <select id="sltTpsa">
-                            <option value="1" selected="selected">BALCÃO FRENTE</option>
-                            <option value="2">ENTREGA</option>
-                            <option value="3">EXPEDIÇÃO</option>
-                            <option value="4">COMPRA NA PRAÇA</option>
-                        </select>
+<div class="tabs">
+    <div id="NovPed" class="tab active">
+        <div class="list-block">
+            <ul>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">DATA PEDIDO</div>
+                        <div id="divData" class="item-after"></div>
                     </div>
-                </div>
-            </div>
-        </li>
-        <li>
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-title label">TRANSPORTADORA</div>
-                    <div class="item-input">
-                        <select id="sltTran" onchange="consultaValorFrete();" onblur="consultaValorFrete();"></select>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-title label">ORÇAMENTO</div>
+                            <div class="item-input">
+                                <input id="numOrca" type="number" min="1" step="1" placeholder="DIGITE O NÚMERO DO ORÇAMENTO" onfocus="limpaCampos();" onblur="consultaOrcamento();">
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </li>
-        <li>
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-title label">VLR FRETE</div>
-                    <div class="item-input">
-                        <input id="numFret" type="number" min="0.01" placeholder="DIGITE O VALOR DO FRETE( EX: 9999,99 )" onkeyup="calculaTotal();">
+                </li>
+                <li class="item-divider">CLIENTE</li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-title label" style="color: red;">CÓD. CLIENTE</div>
+                            <div class="item-input">
+                                <input id="numClie" type="number" min="1" step="1" placeholder="DIGITE O CÓDIGO DO CLIENTE" onblur="consultaInformacoesCliente();" onfocus="limpaCamposCliente();">
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </li>
-        <li>
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-title label">PED. COMPRA</div>
-                    <div class="item-input">
-                        <input id="txtPdcp" type="text" placeholder="DIGITE O PEDIDO DE COMPRA" />
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-input">
+                                <select id="sltClie" disabled="disabled" style="" onchange="if (this.value >= 1) { goNrClie.value = this.value; } else { limpaCamposCliente(); }"></select>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </li>
-        <li class="align-top">
-            <div class="item-content">
-                <div class="item-inner">
-                    <div class="item-title label">OBSERVAÇÃO</div>
-                    <div class="item-input">
-                        <textarea id="txaObse" placeholder="DIGITE A OBSERVAÇÃO DO PEDIDO"></textarea>
+                </li>
+                <li class="item-divider">PRODUTO</li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-title label" style="color: red;">CÓD. FABR.</div>
+                            <div class="item-input">
+                                <input id="txtCfab" type="text" placeholder="DIGITE O CÓDIGO DO FABRICANTE" onblur="consultaProduto();" onfocus="limpaCamposProduto();" />
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div id="divDeno" class="item-after" style="margin-left: auto;"></div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-title label" style="color: red;">QTDE</div>
+                            <div class="item-input">
+                                <input id="numQtde" type="number" min="0.01" placeholder="DIGITE O QUANTIDADE DO PRODUTO( EX: 9999,99 )" onblur="verificaQuantidade();">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">ESTOQUE</div>
+                        <div id="divQtes" class="item-after"></div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-title label" style="color: red;">PR. UNIT.</div>
+                            <div class="item-input">
+                                <input id="numPrun" type="number" min="0.01" placeholder="DIGITE O PREÇO DO PRODUTO( EX: 9999,99 )" onblur="verificaPreco();"> <!--onkeyup="calculaPercentualDesconto();"-->
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-title label">% DESC.</div>
+                            <div class="item-input">
+                                <input id="numPdes" type="number" min="0.01" max="99.99" placeholder="DIGITE A % DESCONTO DO PRODUTO( EX: 99,99 )"> <!--onkeyup="calculaPrecoComDesconto();"-->
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">VLR ULT. VDA</div>
+                        <div id="divUvda" class="item-after"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <a href="#" id="ahrAdic" onclick="adicionaProdutoPedido();" class="button button-fill button-raised">ADICIONAR PRODUTO</a>
+        <div id="divMvpr" class="content-block">
+            <div id="divCabe" style="display: none;" class="row no-gutter">
+                <div class='col-auto'><b>CÓD. FABR.</b></div>
+                <div class='col-auto'><b>ESTOQUE</b></div>
+                <div class='col-auto'><b>QTDE</b></div>
+                <div class='col-auto'><b>PR. UNIT.</b></div>
+                <div class='col-auto'><b>TOTAL</b></div>
+                <div class='col-auto'><b>% DESC.</b></div>
+                <div class='col-auto'></div>
             </div>
-        </li>
-        <li class="item-content">
-            <div class="item-inner">
-                <div class="item-title">TOTAL</div>
-                <div id="divTota" class="item-after"></div>
-            </div>
-        </li>
-    </ul>
+        </div>
+        <div class="list-block">
+            <ul>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">TOTAL PEÇAS</div>
+                        <div id="divTpec" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">DESCONTO</div>
+                        <div id="divVdes" class="item-after"></div>
+                    </div>
+                </li>
+                <li class="item-divider">ORDEM DE SEPARAÇÃO</li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-input">
+                                <select id="sltTpsa">
+                                    <option value="1" selected="selected">BALCÃO FRENTE</option>
+                                    <option value="2">ENTREGA</option>
+                                    <option value="3">EXPEDIÇÃO</option>
+                                    <option value="4">COMPRA NA PRAÇA</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-title label">TRANSPORTADORA</div>
+                            <div class="item-input">
+                                <select id="sltTran" onchange="consultaValorFrete();" onblur="consultaValorFrete();"></select>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-title label">VLR FRETE</div>
+                            <div class="item-input">
+                                <input id="numFret" type="number" min="0.01" placeholder="DIGITE O VALOR DO FRETE( EX: 9999,99 )" onkeyup="calculaTotal();">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-title label">PED. COMPRA</div>
+                            <div class="item-input">
+                                <input id="txtPdcp" type="text" placeholder="DIGITE O PEDIDO DE COMPRA" />
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="align-top">
+                    <div class="item-content">
+                        <div class="item-inner">
+                            <div class="item-title label">OBSERVAÇÃO</div>
+                            <div class="item-input">
+                                <textarea id="txaObse" placeholder="DIGITE A OBSERVAÇÃO DO PEDIDO"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">TOTAL</div>
+                        <div id="divTota" class="item-after"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <a href="#" id="ahrGera" onclick="geraOrdemSeparacao();" class="button button-fill button-raised">GERAR</a>
+        <br />
+    </div>
+    <div id="ConPec" class="tab"></div>
 </div>
-<a href="#" id="ahrGera" onclick="geraOrdemSeparacao();" class="button button-fill button-raised">GERAR</a>
-<br />
 <script>
     var goNrOrca = document.getElementById("numOrca");
-    var goNrIdcl = document.getElementById("numIdcl");
+    var goNrClie = document.getElementById("numClie");
     var goDvData = document.getElementById("divData");
     var goSlClie = document.getElementById("sltClie");
     var goDvDeno = document.getElementById("divDeno");
@@ -925,8 +943,8 @@
     $(document).ready(function () {
         goDvData.innerHTML = objetoDataParaStringData(ldDtHoje);
 
-        OkTecladoAndroid2("numOrca", "numIdcl");
-        OkTecladoAndroid2("numIdcl", "sltClie");
+        OkTecladoAndroid2("numOrca", "ahrAdic");
+        OkTecladoAndroid2("numClie", "sltClie");
         OkTecladoAndroid2("txtCfab", "numQtde");
         OkTecladoAndroid2("numQtde", "numPrun");
         OkTecladoAndroid2("numPrun", "numPdes");
@@ -934,6 +952,8 @@
         OkTecladoAndroid2("numFret", "txtPdcp");
         OkTecladoAndroid2("txtPdcp", "txaObse");
         OkTecladoAndroid3("txaObse", "ahrGera", "ahrGera");
+
+        $("#ConPec").load("ConPec.html");
 
         pesquisaClientes();
         pesquisaTransportadoras();

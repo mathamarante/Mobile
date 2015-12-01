@@ -27,9 +27,73 @@
             lcWsHttp = pcWsHttp + "pesquisaPedidos?lcIdEmpr=TRV&lcIdVend=" + lcIdVend + "&lcPeAcer=1&lcDtInic=" + goDtInic.value.toString().trim() + "&lcDtFina=" + goDtFina.value.toString().trim();
             loLiRank.style.display = "";
         }
-        else {
-            lcWsHttp = pcWsHttp + "pesquisaPedidos?lcIdEmpr=TRV&lcIdVend=" + lcIdVend + "&lcPeAcer=0&lcDtInic:IsNull=True&lcDtFina:IsNull=True";
+        else if (lcSlPesq == "pendentes") {
             loLiRank.style.display = "none";
+            lcWsHttp = pcWsHttp + "pesquisaPedidos?lcIdEmpr=TRV&lcIdVend=" + lcIdVend + "&lcPeAcer=0&lcDtInic:IsNull=True&lcDtFina:IsNull=True";
+        }
+        else {
+            loLiRank.style.display = "none";
+
+            try {
+                var lmPdMvpr = JSON.parse(localStorage.getItem("mUPdMvpr"));
+                var lmPqPedi = [];
+
+                if (lmPdMvpr.length > 0) { }
+                else {
+                    throw "";
+                }
+
+                var lnPeNume = lmPdMvpr[0].pe_nume, lnPeTota = 0;
+
+                for (var x = 0; x < lmPdMvpr.length; x++) {
+                    if (lnPeNume != lmPdMvpr[x].pe_nume) {
+                        lmPqPedi.push({ pe_nume: lmPdMvpr[x - 1].pe_nume, id_clie: lmPdMvpr[x - 1].id_clie, pe_data: lmPdMvpr[x - 1].pe_data, pe_tota: lnPeTota });
+                        lnPeNume = lmPdMvpr[x].pe_nume;
+                        lnPeTota = 0;
+                    }
+
+                    lnPeTota += (lmPdMvpr[x].mp_qtde * lmPdMvpr[x].mp_prun) - ((lmPdMvpr[x].mp_qtde * lmPdMvpr[x].mp_prun) * (lmPdMvpr[x].mp_pdes / 100));
+                }
+
+                lmPqPedi.push({ pe_nume: lmPdMvpr[x - 1].pe_nume, id_clie: lmPdMvpr[x - 1].id_clie, pe_data: lmPdMvpr[x - 1].pe_data, pe_tota: lnPeTota });
+
+                if (lmPqPedi.length > 0) {
+                    var lcPqPedi = "";
+                    var lnVdTota = 0;
+
+                    lcPqPedi += "<div class='row no-gutter'>";
+                    lcPqPedi += "<div class='col-auto'><b>NR. ORÇ.</b></div>";
+                    lcPqPedi += "<div class='col-auto'><b>CÓD. CLIE.</b></div>";
+                    lcPqPedi += "<div class='col-auto'><b>DATA</b></div>";
+                    lcPqPedi += "<div class='col-auto'><b>VALOR</b></div>";
+                    lcPqPedi += "</div>";
+
+                    for (var x = 0; x < lmPqPedi.length; x++) {
+                        lcPqPedi += "<div onclick='consultaPedido(" + x + ", " + lmPqPedi[x].pe_tota + ");' class='row no-gutter'>";
+                        lcPqPedi += "<div id='divPen" + x.toString().trim() + "' class='col-auto'>" + lmPqPedi[x].pe_nume + "</div>";
+                        lcPqPedi += "<div class='col-auto'>" + lmPqPedi[x].id_clie + "</div>";
+                        lcPqPedi += "<div class='col-auto'>" + lmPqPedi[x].pe_data + "</div>";
+                        lcPqPedi += "<div class='col-auto'>" + brMoney(lmPqPedi[x].pe_tota) + "</div>";
+                        lcPqPedi += "</div>";
+
+                        lnVdTota += lmPqPedi[x].pe_tota;
+                    }
+
+                    goDvTota.innerHTML = brMoney(lnVdTota);
+
+                    $("#divPesq").html(lcPqPedi).show();
+                }
+                else {
+                    myApp.alert("NENHUM PEDIDO ENCONTRADO", "ALERTA");
+                    limpaCamposPesquisa();
+                }
+            }
+            catch (loWkErro) {
+                myApp.alert("NENHUM PEDIDO ENCONTRADO", "ALERTA");
+                limpaCamposPesquisa();
+            }
+
+            return;
         }
 
         myApp.showIndicator();
@@ -47,7 +111,7 @@
                         var lnVdTota = 0;
 
                         lcPqPedi += "<div class='row no-gutter'>";
-                        lcPqPedi += "<div class='col-auto'><b>NR. PED.</b></div>";
+                        lcPqPedi += "<div class='col-auto'><b>NR. ORÇ.</b></div>";
                         lcPqPedi += "<div class='col-auto'><b>R. SOCIAL</b></div>";
                         lcPqPedi += "<div class='col-auto'><b>DATA</b></div>";
 
@@ -191,11 +255,48 @@
     }
 
     function consultaPedido(lnNrLinh, lnPeTota) {
+        myApp.showTab("#DetPed");
+
         var lcPeNume = document.getElementById("divPen" + lnNrLinh).innerHTML.trim();
 
         pesquisaProdutosPedido(lcPeNume);
 
-        myApp.showTab("#DetPed");
+        if (parseInt(lcPeNume) < 1500000) {
+            try {
+                var lmPdMvpr = JSON.parse(localStorage.getItem("mUPdMvpr"));
+                var loCnPedi = {}
+
+                var lnPeNume = parseInt(lcPeNume), lnPeTota = 0;
+
+                for (var x = 0; x < lmPdMvpr.length; x++) {
+                    if (lnPeNume == lmPdMvpr[x].pe_nume) {
+                        lnPeTota += (lmPdMvpr[x].mp_qtde * lmPdMvpr[x].mp_prun) - ((lmPdMvpr[x].mp_qtde * lmPdMvpr[x].mp_prun) * (lmPdMvpr[x].mp_pdes / 100));
+                        loCnPedi = { pe_nume: lnPeNume, id_clie: lmPdMvpr[x].id_clie, pe_data: lmPdMvpr[x].pe_data, pe_tota: lnPeTota };
+                    }
+                }
+
+                goDvPenr.innerHTML = loCnPedi.pe_nume;
+                goDvIdcl.innerHTML = loCnPedi.id_clie;
+                goDvNome.innerHTML = "";
+                goDvFant.innerHTML = "";
+                goDvCida.innerHTML = "";
+                goDvFone.innerHTML = "";
+                goDvData.innerHTML = loCnPedi.pe_data;
+                goDvDtac.innerHTML = "";
+                goDvNfnr.innerHTML = "";
+                goDvValo.innerHTML = brMoney(loCnPedi.pe_tota);
+                goDvFret.innerHTML = "";
+                goDvTtal.innerHTML = brMoney(loCnPedi.pe_tota);
+                goTaObse.value = "";
+            }
+            catch (loWkErro) {
+                myApp.alert("ERRO AO CONSULTAR PEDIDO", "ERRO");
+                limpaCamposDetalhes();
+            }
+
+            return;
+        }
+
         myApp.showIndicator();
 
         $.ajax({
@@ -240,7 +341,48 @@
     }
 
     function pesquisaProdutosPedido(lcPeNume) {
-        myApp.showTab("#DetPed");
+        if (parseInt(lcPeNume) < 1500000) {
+            try {
+                var lmMpPedi = JSON.parse(localStorage.getItem("mUPdMvpr"));
+
+                if (lmMpPedi.length > 0) {
+                    var lcMpPedi = "";
+
+                    lcMpPedi += "<div class='row no-gutter'>";
+                    lcMpPedi += "<div class='col-auto'><b>CÓD. FAB.</b></div>";
+                    lcMpPedi += "<div class='col-auto'><b>QTDE</b></div>";
+                    lcMpPedi += "<div class='col-auto'><b>PREÇO</b></div>";
+                    lcMpPedi += "<div class='col-auto'><b>DESC.</b></div>";
+                    lcMpPedi += "<div class='col-auto'><b>TOTAL</b></div>";
+                    lcMpPedi += "</div>";
+
+                    for (var x = 0; x < lmMpPedi.length; x++) {
+                        if (lmMpPedi[x].pe_nume == parseInt(lcPeNume)) {
+                            lcMpPedi += "<div class='row no-gutter'>";
+                            lcMpPedi += "<div class='col-auto'>" + lmMpPedi[x].dm_cfab + "</div>";
+                            lcMpPedi += "<div class='col-auto'>" + lmMpPedi[x].mp_qtde + "</div>";
+                            lcMpPedi += "<div class='col-auto'>" + brMoney(lmMpPedi[x].mp_prun) + "</div>";
+                            lcMpPedi += "<div class='col-auto'>" + brMoney((lmMpPedi[x].mp_qtde * lmMpPedi[x].mp_prun) * (lmMpPedi[x].mp_pdes / 100)) + "</div>";
+                            lcMpPedi += "<div class='col-auto'>" + brMoney((lmMpPedi[x].mp_qtde * lmMpPedi[x].mp_prun) - ((lmMpPedi[x].mp_qtde * lmMpPedi[x].mp_prun) * (lmMpPedi[x].mp_pdes / 100))) + "</div>";
+                            lcMpPedi += "</div>";
+                        }
+                    }
+
+                    $("#divDeta").html(lcMpPedi).show();
+                }
+                else {
+                    myApp.alert("NENHUM PRODUTO DO PEDIDO ENCONTRADO", "ALERTA");
+                    limpaCamposDetalhes();
+                }
+            }
+            catch (loWkErro) {
+                myApp.alert("ERRO AO CONSULTAR PRODUTOS DO PEDIDO", "ERRO");
+                limpaCamposDetalhes();
+            }
+
+            return;
+        }
+
         myApp.showIndicator();
 
         $.ajax({
@@ -325,6 +467,7 @@
                         <select id="sltPesq" name="sltPesq" onchange="mostraPesquisaAcertados();">
                             <option value="pendentes" selected="selected">PENDENTES</option>
                             <option value="acertados">ACERTADOS</option>
+                            <!--<option value="offline">OFFLINE</option>-->
                         </select>
                     </div>
                 </div>
@@ -384,7 +527,7 @@
             <ul>
                 <li class="item-content">
                     <div class="item-inner">
-                        <div class="item-title">NR. PEDIDO</div>
+                        <div class="item-title">NR. ORÇAMENTO</div>
                         <div id="divPenr" class="item-after"></div>
                     </div>
                 </li>

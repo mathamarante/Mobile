@@ -1,0 +1,259 @@
+﻿<script>
+    function pesquisaPecas() {
+        var lcDmCfab = "", lcDmDeno = "", lcTxPesq = goTxPesq.value.trim(), lcSlPesq = goSlPesq.value.trim();
+
+        if (lcTxPesq == "") {
+            myApp.alert("PESQUISA VAZIA", "ERRO");
+            limpaCampos();
+            return;
+        }
+        else if (lcSlPesq == "dm_cfab") {
+            lcDmCfab = "=" + lcTxPesq;
+            lcDmDeno = ":IsNull=True";
+        }
+        else if (lcSlPesq == "dm_deno") {
+            lcDmCfab = ":IsNull=True";
+            lcDmDeno = "=" + lcTxPesq;
+        }
+
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaPecas?lcIdEmpr=TRV&lcIdFili=1&lcIdSitu=1&lcDmCfab" + lcDmCfab + "&lcDmDeno" + lcDmDeno,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmPqPeca) {
+                try {
+                    if (lmPqPeca.length > 0) {
+                        var lcPqPeca = "";
+
+                        lcPqPeca += "<div id='divCpec' class='row no-gutter'>";
+                        lcPqPeca += "<div class='col-60'><b>DESCRIÇÃO</b></div>";
+                        lcPqPeca += "<div class='col-20'><b>COD. FABRICANTE</b></div>";
+                        lcPqPeca += "<div class='col-10'><b>ESTOQUE</b></div>";
+                        lcPqPeca += "<div class='col-10'><b>PREÇO</b></div>";
+                        lcPqPeca += "</div>";
+
+                        for (var x = 0; x < lmPqPeca.length; x++) {
+                            lcPqPeca += "<div id='divPec" + x.toString().trim() + "' onclick='pesquisaPecasEquivalentes(" + x + "); pesquisaAplicacoes(" + x + "); mudaCor(this);' class='row no-gutter'>";
+                            lcPqPeca += "<div class='col-60'>" + lmPqPeca[x].dm_deno + "</div>";
+                            lcPqPeca += "<div id='divCfa" + x + "' class='col-20'>" + lmPqPeca[x].dm_cfab + "</div>";
+                            lcPqPeca += "<div class='col-10'>" + lmPqPeca[x].qt_sald + "</div>";
+                            lcPqPeca += "<div class='col-10'>" + brMoney(lmPqPeca[x].dm_pvar) + "</div>";
+                            lcPqPeca += "</div>";
+                        }
+
+                        $("#divPeca").html(lcPqPeca).show();
+                    }
+                    else {
+                        myApp.alert("NENHUMA PEÇA ENCONTRADA", "ALERTA");
+                        limpaCampos();
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("ERRO AO PESQUISAR PEÇAS", "ERRO");
+                    limpaCampos();
+                }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("ERRO AO PESQUISAR PEÇAS", "ERRO");
+                limpaCampos();
+            }
+        });
+    }
+
+    function pesquisaPecasEquivalentes(lnNrLnha) {
+        var lcDmCfab = document.getElementById("divCfa" + lnNrLnha.toString().trim()).innerHTML.trim();
+
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaPecasEquivalentes?lcIdEmpr=TRV&lcIdFili=1&lcIdSitu=1&lcDmCfab=" + lcDmCfab,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmPqPeca) {
+                try {
+                    if (lmPqPeca.length > 0) {
+                        var lcPqPeca = "";
+
+                        lcPqPeca += "<div class='row no-gutter'>";
+                        lcPqPeca += "<div class='col-60'><b>DESCRIÇÃO</b></div>";
+                        lcPqPeca += "<div class='col-20'><b>COD. FABRICANTE</b></div>";
+                        lcPqPeca += "<div class='col-10'><b>ESTOQUE</b></div>";
+                        lcPqPeca += "<div class='col-10'><b>PREÇO</b></div>";
+                        lcPqPeca += "</div>";
+
+                        for (var x = 0; x < lmPqPeca.length; x++) {
+                            lcPqPeca += "<div class='row no-gutter'>";
+                            lcPqPeca += "<div class='col-60'>" + lmPqPeca[x].dm_deno + "</div>";
+                            lcPqPeca += "<div class='col-20'>" + lmPqPeca[x].dm_cfab + "</div>";
+                            lcPqPeca += "<div class='col-10'>" + lmPqPeca[x].qt_sald + "</div>";
+                            lcPqPeca += "<div class='col-10'>" + brMoney(lmPqPeca[x].dm_pvar) + "</div>";
+                            lcPqPeca += "</div>";
+                        }
+
+                        $("#divEquv").html(lcPqPeca).show();
+                    }
+                    else { goDvEquv.innerHTML = ""; }
+                }
+                catch (loWkErro) { goDvEquv.innerHTML = ""; }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                goDvEquv.innerHTML = "";
+            }
+        });
+    }
+
+    function pesquisaAplicacoes(lnNrLnha) {
+        var lcDmCfab = document.getElementById("divCfa" + lnNrLnha.toString().trim()).innerHTML.trim();
+
+        myApp.showIndicator();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaAplicacoes?lcIdEmpr=TRV&lcDmCfab=" + lcDmCfab,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmPqAplc) {
+                try {
+                    if (lmPqAplc.length > 0) {
+                        var lcPqAplc = "", lcApPadr = "";
+
+                        lcPqAplc += "<div class='row no-gutter'>";
+                        lcPqAplc += "<div class='col-5'><b>PD</b></div>";
+                        lcPqAplc += "<div class='col-40'><b>COD. FABRICANTE</b></div>";
+                        lcPqAplc += "<div class='col-40'><b>ESTOQUE</b></div>";
+                        lcPqAplc += "<div class='col-15'><b>ANO</b></div>";
+                        lcPqAplc += "</div>";
+
+                        for (var x = 0; x < lmPqAplc.length; x++) {
+                            lcApPadr = "";
+
+                            lcPqAplc += "<div class='row no-gutter'>";
+
+                            if (lmPqAplc[x].ap_padr == 1) { lcApPadr = "X"; }
+                            else { lcApPadr = ""; }
+
+                            lcPqAplc += "<div class='col-5'>" + lcApPadr + "</div>";
+                            lcPqAplc += "<div class='col-40'>" + lmPqAplc[x].dm_marc + "</div>";
+                            lcPqAplc += "<div class='col-40'>" + lmPqAplc[x].dm_mode + "</div>";
+                            lcPqAplc += "<div class='col-15'>" + lmPqAplc[x].ap_anof + "</div>";
+                            lcPqAplc += "</div>";
+                        }
+
+                        $("#divAplc").html(lcPqAplc).show();
+                    }
+                    else { goDvAplc.innerHTML = ""; }
+                }
+                catch (loWkErro) { goDvAplc.innerHTML = ""; }
+
+                myApp.hideIndicator();
+            },
+            error: function () {
+                myApp.hideIndicator();
+                goDvAplc.innerHTML = "";
+            }
+        });
+    }
+
+    function limpaCampos() {
+        goTxPesq.value = "";
+        goDvAplc.innerHTML = "";
+        goDvEquv.innerHTML = "";
+        goDvPeca.innerHTML = "";
+    }
+
+    function mudaCor(loDvPeca) {
+        $("#divPeca > div").each(function () {
+            if (this.id != "divCpec") {
+                $("#" + this.id + " > div")[0].style.color = "";
+                $("#" + this.id + " > div")[1].style.color = "";
+                $("#" + this.id + " > div")[2].style.color = "";
+                $("#" + this.id + " > div")[3].style.color = "";
+
+                $("#" + this.id + " > div")[0].style.fontWeight = "";
+                $("#" + this.id + " > div")[1].style.fontWeight = "";
+                $("#" + this.id + " > div")[2].style.fontWeight = "";
+                $("#" + this.id + " > div")[3].style.fontWeight = "";
+            }
+        });
+
+        $("#" + loDvPeca.id + " > div")[0].style.color = "darkblue";
+        $("#" + loDvPeca.id + " > div")[1].style.color = "darkblue";
+        $("#" + loDvPeca.id + " > div")[2].style.color = "darkblue";
+        $("#" + loDvPeca.id + " > div")[3].style.color = "darkblue";
+
+        $("#" + loDvPeca.id + " > div")[0].style.fontWeight = "bold";
+        $("#" + loDvPeca.id + " > div")[1].style.fontWeight = "bold";
+        $("#" + loDvPeca.id + " > div")[2].style.fontWeight = "bold";
+        $("#" + loDvPeca.id + " > div")[3].style.fontWeight = "bold";
+    }
+
+    //@ sourceURL=ConPec1.js
+</script>
+<div class="list-block">
+    <ul>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-input">
+                        <select id="sltPesq" name="sltPesq">
+                            <option value="dm_cfab" selected="selected">CÓDIGO DO FABRICANTE</option>
+                            <option value="dm_deno">DESCRIÇÃO</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-input">
+                        <input id="txtPesq" type="text" placeholder="DIGITE O TEXTO DA PESQUISA" onfocus="limpaCampos();" onblur="this.value = this.value.toUpperCase();" />
+                    </div>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+<a id="ahrPesq" href="#" onclick="pesquisaPecas();" class="button button-fill button-raised">PESQUISAR</a>
+<div class="list-block">
+    <ul>
+        <li class="item-divider">APLICAÇÃO</li>
+    </ul>
+</div>
+<div id="divAplc" class="content-block"></div>
+<div class="list-block">
+    <ul>
+        <li class="item-divider">PEÇAS EQUIVALENTES</li>
+    </ul>
+</div>
+<div id="divEquv" class="content-block"></div>
+<div class="list-block">
+    <ul>
+        <li class="item-divider">PEÇAS</li>
+    </ul>
+</div>
+<div id="divPeca" class="content-block"></div>
+<script>
+    var goSlPesq = document.getElementById("sltPesq");
+    var goTxPesq = document.getElementById("txtPesq");
+    var goDvAplc = document.getElementById("divAplc");
+    var goDvEquv = document.getElementById("divEquv");
+    var goDvPeca = document.getElementById("divPeca");
+
+    $(document).ready(function () {
+        OkTecladoAndroid3("txtPesq", "ahrPesq", "ahrPesq");
+    });
+</script>

@@ -99,18 +99,18 @@
                         var lcClInfi = "";
 
                         lcClInfi += "<div class='row no-gutter'>";
-                        lcClInfi += "<div class='col-auto'><b>CÓDIGO</b></div>";
-                        lcClInfi += "<div class='col-auto'><b>R. SOCIAL</b></div>";
-                        lcClInfi += "<div class='col-auto'><b>CIDADE</b></div>";
-                        lcClInfi += "<div class='col-auto'><b>ULT. COMP.</b></div>";
+                        lcClInfi += "<div class='col-10'><b>CÓD.</b></div>";
+                        lcClInfi += "<div class='col-50'><b>R. SOCIAL</b></div>";
+                        lcClInfi += "<div class='col-25'><b>CIDADE</b></div>";
+                        lcClInfi += "<div class='col-15'><b>ULT. COMP.</b></div>";
                         lcClInfi += "</div>";
 
                         for (var x = 0; x < lmClInfi.length; x++) {
                             lcClInfi += "<div onclick='consultaInformacoesCliente(" + x + ");' class='row no-gutter'>";
-                            lcClInfi += "<div id='divIdc" + x.toString().trim() + "' class='col-auto'>" + lmClInfi[x].id_clie + "</div>";
-                            lcClInfi += "<div class='col-auto'>" + lmClInfi[x].cl_nome + "</div>";
-                            lcClInfi += "<div class='col-auto'>" + lmClInfi[x].id_cida + "</div>";
-                            lcClInfi += "<div class='col-auto'>" + escondeDataZerada(jsonDate(lmClInfi[x].pe_data)) + "</div>";
+                            lcClInfi += "<div class='col-10' id='divIdc" + x.toString().trim() + "'>" + lmClInfi[x].id_clie + "</div>";
+                            lcClInfi += "<div class='col-50'>" + lmClInfi[x].cl_nome + "</div>";
+                            lcClInfi += "<div class='col-25'>" + lmClInfi[x].id_cida + "</div>";
+                            lcClInfi += "<div class='col-15'>" + escondeDataZerada(jsonDate(lmClInfi[x].pe_data)) + "</div>";
                             lcClInfi += "</div>";
                         }
 

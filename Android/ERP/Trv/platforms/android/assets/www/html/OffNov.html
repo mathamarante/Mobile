@@ -1,0 +1,367 @@
+﻿<script>
+    function consultaOrcamento() {
+        if (goNrOrca.value == 0) {
+            myApp.hideIndicator();
+            limpaCampos();
+            return;
+        }
+        else if (goNrOrca.value >= 1) { }
+        else {
+            myApp.hideIndicator();
+            limpaCampos();
+            myApp.alert("NÚMERO DO ORÇAMENTO INVÁLIDO", "ERRO");
+
+            return;
+        }
+
+        var lmPdMvpr = JSON.parse(localStorage.getItem("mUPdMvpr"));
+        var lmCnOrca = [];
+
+        try {
+
+            for (var i = 0; i < lmPdMvpr.length; i++) {
+                if (lmPdMvpr[i].pe_nume == parseInt(goNrOrca.value)) { lmCnOrca.push(lmPdMvpr[i]); }
+            }
+
+            if (lmCnOrca.length > 0) {
+                goDvData.innerHTML = lmCnOrca[0].pe_data;
+                goNrClie.value = lmCnOrca[0].id_clie;
+
+                document.getElementById("divCabe").style.display = "";
+
+                var lcPdMvpr = "";
+
+                lcPdMvpr = $("#divMvpr").html();
+
+                for (var x = 0; x < lmCnOrca.length; x++) {
+                    lcPdMvpr += "<div id='div" + lmCnOrca[x].dm_cfab.toString().trim() + "' class='row no-gutter pedimvpr'>";
+                    lcPdMvpr += "<div class='col-auto'>" + lmCnOrca[x].dm_cfab.toString().trim() + "</div>";
+                    lcPdMvpr += "<div class='col-auto'>" + lmCnOrca[x].mp_qtde.toString().trim() + "</div>";
+                    lcPdMvpr += "<div class='col-auto'>" + brMoney(lmCnOrca[x].mp_prun.toString().trim()) + "</div>";
+                    lcPdMvpr += "<div class='col-auto'>" + brMoney(parseFloat(lmCnOrca[x].mp_qtde) * parseFloat(lmCnOrca[x].mp_prun)) + "</div>";
+                    lcPdMvpr += "<div class='col-auto'>" + brDecimal(lmCnOrca[x].mp_pdes) + "</div>";
+                    lcPdMvpr += "<div class='col-auto'><a href='#' onclick='removeProdutoPedido(\"" + lmCnOrca[x].dm_cfab.toString().trim() + "\")' class='button button-fill color-red'>REMOVER</a></div>";
+                    lcPdMvpr += "</div>";
+                }
+
+                $("#divMvpr").html(lcPdMvpr).show();
+
+                calculaTotal();
+
+                goTxCfab.focus();
+            }
+            else {
+                limpaCampos();
+                goNrOrca.focus();
+                myApp.alert("ORÇAMENTO NÃO ENCONTRADO", "ERRO");
+            }
+        }
+        catch (loWkErro) {
+            limpaCampos();
+            goNrOrca.focus();
+            myApp.alert("ORÇAMENTO NÃO ENCONTRADO", "ERRO");
+        }
+    }
+
+    function limpaCamposCliente() {
+        goNrClie.value = "";
+    }
+
+    function limpaCamposProduto() {
+        goTxCfab.value = "";
+        goNrQtde.value = "";
+        goNrPrun.value = "";
+        goNrPdes.value = "";
+    }
+
+    function adicionaProdutoPedido() {
+        if (parseInt(goNrClie.value) > 0) { }
+        else {
+            myApp.alert("CÓDIGO DO CLIENTE INVÁLIDO", "ERRO");
+
+            return;
+        }
+
+        if (goTxCfab.value.toString().trim() == "") {
+            myApp.alert("CÓDIGO DO FABRICANTE INVÁLIDO", "ERRO");
+
+            return;
+        }
+
+        if (parseFloat(goNrQtde.value) > 0) { }
+        else {
+            myApp.alert("QUANTIDADE INVÁLIDA", "ERRO");
+
+            return;
+        }
+
+        if (parseFloat(goNrPrun.value) > 0) { }
+        else {
+            myApp.alert("PREÇO INVÁLIDO", "ERRO");
+
+            return;
+        }
+
+        if (document.getElementById("div" + goTxCfab.value.toString().trim())) {
+            goTxCfab.focus();
+
+            return;
+        }
+
+        insereProduto();
+
+        document.getElementById("divCabe").style.display = "";
+
+        var lcPdMvpr = "";
+
+        lcPdMvpr = $("#divMvpr").html();
+
+        lcPdMvpr += "<div id='div" + goTxCfab.value.toString().trim() + "' class='row no-gutter pedimvpr'>";
+        lcPdMvpr += "<div class='col-auto'>" + goTxCfab.value.toString().trim() + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + goNrQtde.value.toString().trim() + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + brMoneyCasasDecimais(goNrPrun.value.toString().trim()) + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + brMoney(goNrQtde.value * goNrPrun.value) + "</div>";
+        lcPdMvpr += "<div class='col-auto'>" + brDecimal(goNrPdes.value) + "</div>";
+        lcPdMvpr += "<div class='col-auto'><a href='#' onclick='removeProdutoPedido(\"" + goTxCfab.value.toString().trim() + "\")' class='button button-fill color-red'>REMOVER</a></div>";
+        lcPdMvpr += "</div>";
+
+        $("#divMvpr").html(lcPdMvpr).show();
+
+        calculaTotal();
+
+        goTxCfab.focus();
+    }
+
+    function removeProdutoPedido(lcDmCfab) {
+        $("#div" + lcDmCfab).remove();
+
+        if ($("#divMvpr > div").length <= 1) { document.getElementById("divCabe").style.display = "none"; }
+
+        calculaTotal();
+
+        if (goNrOrca.value.trim() != "") { deletaProduto(lcDmCfab); }
+    }
+
+    function calculaTotal() {
+        var lnToPeca = 0, lnVlDesc = 0, lnClTota = 0, lnClPdes = 0;
+
+        $("#divMvpr > div").each(function () {
+            if (this.id != "divCabe") {
+                lnClTota = parseFloat($("#" + this.id + " > div")[3].innerHTML.replace("R$ ", "").split(".").join("").replace(",", "."));
+                lnClPdes = parseFloat($("#" + this.id + " > div")[4].innerHTML.split(".").join("").replace(",", "."));
+
+                lnToPeca += lnClTota;
+                lnVlDesc += lnClTota * (lnClPdes / 100);
+            }
+        });
+
+        if (lnToPeca > 0) {
+            goDvTpec.innerHTML = brMoney(lnToPeca);
+            goDvVdes.innerHTML = brMoney(lnVlDesc);
+        }
+        else {
+            goDvTpec.innerHTML = "";
+            goDvVdes.innerHTML = "";
+        }
+    }
+
+    function insereProduto() {
+        try {
+            var lmPdMvpr = JSON.parse(localStorage.getItem("mUPdMvpr"));
+
+            if (!lmPdMvpr) {
+                lmPdMvpr = [];
+            }
+
+            var lnPeNume = 0;
+
+            if (goNrOrca.value.trim() == "") {
+                for (var x = 0; x < lmPdMvpr.length; x++) {
+                    if (lmPdMvpr[x].pe_nume > lnPeNume) { lnPeNume = lmPdMvpr[x].pe_nume; }
+                }
+
+                lnPeNume++;
+
+                goNrOrca.value = lnPeNume.toString().trim();
+            }
+            else { lnPeNume = parseInt(goNrOrca.value); }
+
+            var lnMpPdes = 0;
+
+            if (goNrPdes.value.trim() == "") { lnMpPdes = 0; }
+            else { lnMpPdes = parseFloat(goNrPdes.value); }
+
+            var loPdMvpr = { pe_data: goDvData.innerHTML.trim(), pe_nume: lnPeNume, id_clie: parseInt(goNrClie.value), dm_cfab: goTxCfab.value, mp_qtde: parseFloat(goNrQtde.value), mp_prun: parseFloat(goNrPrun.value), mp_pdes: lnMpPdes };
+
+            lmPdMvpr.push(loPdMvpr);
+
+            lmPdMvpr.sort(function (a, b) {
+                return parseInt(a.pe_nume) - parseInt(b.pe_nume);
+            });
+
+            localStorage.setItem("mUPdMvpr", JSON.stringify(lmPdMvpr));
+        }
+        catch (loWkErro) {
+            var lmPdMvpr = [];
+
+            lmPdMvpr.push(loPdMvpr);
+
+            localStorage.setItem("mUPdMvpr", JSON.stringify(lmPdMvpr));
+        }
+    }
+
+    function deletaProduto(lcDmCfab) {
+        var lmPdMvpr = JSON.parse(localStorage.getItem("mUPdMvpr"));
+
+        for (var x = 0; x < lmPdMvpr.length; x++) {
+            if (lmPdMvpr[x].dm_cfab.trim() == lcDmCfab.trim()) {
+                lmPdMvpr.splice(x, 1);
+                break;
+            }
+        }
+
+        localStorage.setItem("mUPdMvpr", JSON.stringify(lmPdMvpr));
+    }
+
+    function limpaCampos() {
+        ldDtHoje = new Date();
+
+        goDvData.innerHTML = objetoDataParaStringData(ldDtHoje);
+
+        goNrOrca.value = "";
+
+        limpaCamposCliente();
+        limpaCamposProduto();
+
+        $("#divMvpr > div").each(function () {
+            if (this.id != "divCabe") { removeProdutoPedido($("#" + this.id + " > div")[0].innerHTML.trim()); }
+        });
+    }
+
+    //@ sourceURL=OffNov1.js
+</script>
+<div class="list-block">
+    <ul>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">DATA PEDIDO</div>
+                <div id="divData" class="item-after"></div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">ORÇAMENTO</div>
+                    <div class="item-input">
+                        <input id="numOrca" type="number" min="1" step="1" placeholder="DIGITE O NÚMERO DO ORÇAMENTO" onfocus="limpaCampos();" onblur="consultaOrcamento();" />
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="item-divider">CLIENTE</li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">CÓD. CLIENTE</div>
+                    <div class="item-input">
+                        <input id="numClie" type="number" min="1" step="1" placeholder="DIGITE O CÓDIGO DO CLIENTE" onfocus="limpaCamposCliente();" />
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="item-divider">PRODUTO</li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">CÓD. FABR.</div>
+                    <div class="item-input">
+                        <input id="txtCfab" type="text" placeholder="DIGITE O CÓDIGO DO FABRICANTE" onfocus="limpaCamposProduto();" onblur="this.value = this.value.toUpperCase();" />
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">QTDE</div>
+                    <div class="item-input">
+                        <input id="numQtde" type="number" min="0.01" placeholder="DIGITE O QUANTIDADE DO PRODUTO( EX: 9999,99 )" />
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label" style="color: red;">PR. UNIT.</div>
+                    <div class="item-input">
+                        <input id="numPrun" type="number" min="0.01" placeholder="DIGITE O PREÇO DO PRODUTO( EX: 9999,99 )" />
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">% DESC.</div>
+                    <div class="item-input">
+                        <input id="numPdes" type="number" min="0.01" max="99.99" placeholder="DIGITE A % DESCONTO DO PRODUTO( EX: 99,99 )" />
+                    </div>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+<a href="#" id="ahrAdic" onclick="adicionaProdutoPedido();" class="button button-fill button-raised">ADICIONAR PRODUTO</a>
+<div id="divMvpr" class="content-block">
+    <div id="divCabe" style="display: none;" class="row no-gutter">
+        <div class='col-auto'><b>CÓD. FABR.</b></div>
+        <div class='col-auto'><b>QTDE</b></div>
+        <div class='col-auto'><b>PR. UNIT.</b></div>
+        <div class='col-auto'><b>TOTAL</b></div>
+        <div class='col-auto'><b>% DESC.</b></div>
+        <div class='col-auto'></div>
+    </div>
+</div>
+<div class="list-block">
+    <ul>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">TOTAL PEÇAS</div>
+                <div id="divTpec" class="item-after"></div>
+            </div>
+        </li>
+        <li class="item-content">
+            <div class="item-inner">
+                <div class="item-title">DESCONTO</div>
+                <div id="divVdes" class="item-after"></div>
+            </div>
+        </li>
+    </ul>
+</div>
+<script>
+    var goNrOrca = document.getElementById("numOrca");
+    var goNrClie = document.getElementById("numClie");
+    var goDvData = document.getElementById("divData");
+    var goNrQtde = document.getElementById("numQtde");
+    var goNrPrun = document.getElementById("numPrun");
+    var goNrPdes = document.getElementById("numPdes");
+    var goTxCfab = document.getElementById("txtCfab");
+    var goDvCabe = document.getElementById("divCabe");
+    var goDvTpec = document.getElementById("divTpec");
+    var goDvVdes = document.getElementById("divVdes");
+    var ldDtHoje = new Date();
+
+    $(document).ready(function () {
+        goDvData.innerHTML = objetoDataParaStringData(ldDtHoje);
+
+        OkTecladoAndroid2("numOrca", "numClie");
+        OkTecladoAndroid2("numClie", "txtCfab");
+        OkTecladoAndroid2("txtCfab", "numQtde");
+        OkTecladoAndroid2("numQtde", "numPrun");
+        OkTecladoAndroid2("numPrun", "numPdes");
+        OkTecladoAndroid3("numPdes", "ahrAdic", "ahrAdic");
+    });
+
+    //@ sourceURL=OffNov2.js
+</script>
