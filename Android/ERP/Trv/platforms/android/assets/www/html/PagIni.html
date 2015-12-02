@@ -12,7 +12,7 @@
         myApp.showIndicator();
 
         $.ajax({
-            url: pcWsHttp + "pesquisaFinanceiroResumido?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim(),
+            url: pcWsHttp + "pesquisaFinanceiroResumido?lcIdEmpr=TRV&lcIdVend=" + poCnCadt.ca_codi.toString().trim(),
             type: "GET",
             dataType: "jsonp",
             contentType: "application/json; charset=utf-8",
@@ -88,7 +88,7 @@
         myApp.showIndicator();
 
         $.ajax({
-            url: pcWsHttp + "pesquisaClientesNaoFidelizados?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim(),
+            url: pcWsHttp + "pesquisaClientesNaoFidelizados?lcIdEmpr=TRV&lcIdVend=" + poCnCadt.ca_codi.toString().trim(),
             type: "GET",
             dataType: "jsonp",
             contentType: "application/json; charset=utf-8",

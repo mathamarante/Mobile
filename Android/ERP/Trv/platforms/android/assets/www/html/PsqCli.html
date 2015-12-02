@@ -3,7 +3,7 @@
         myApp.showIndicator();
 
         $.ajax({
-            url: pcWsHttp + "pesquisaUltimosDezClientesCadastrados?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim(),
+            url: pcWsHttp + "pesquisaUltimosDezClientesCadastrados?lcIdEmpr=TRV&lcIdVend=" + poCnCadt.ca_codi.toString().trim(),
             type: "GET",
             dataType: "jsonp",
             contentType: "application/json; charset=utf-8",
@@ -68,7 +68,7 @@
         goDvTgrd.style.display = "none";
         myApp.showTab("#PsqCli");
 
-        if (lcTxPesq == "") { lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone:IsNull=True"; }
+        if (lcTxPesq == "") { lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnCadt.ca_codi.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone:IsNull=True"; }
         else if (lcSlPesq == "id_clie") {
             if (isNaN(lcTxPesq)) {
                 myApp.alert("CÓDIGO INVÁLIDO", "ERRO");
@@ -76,16 +76,16 @@
 
                 return false;
             }
-            lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie=" + lcTxPesq + "&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone:IsNull=True";
+            lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnCadt.ca_codi.toString().trim() + "&lcIdClie=" + lcTxPesq + "&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone:IsNull=True";
         }
-        else if (lcSlPesq == "cl_nome") { lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie:IsNull=True&lcClNome=" + lcTxPesq + "&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone:IsNull=True"; }
+        else if (lcSlPesq == "cl_nome") { lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnCadt.ca_codi.toString().trim() + "&lcIdClie:IsNull=True&lcClNome=" + lcTxPesq + "&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone:IsNull=True"; }
         else if (lcSlPesq == "cl_cnpj") {
             loTxPesq.value = lcTxPesq.replace(/[^\d,+$]+/g, '');
 
-            lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj=" + loTxPesq.value + "&lcIdCida:IsNull=True&lcClFone:IsNull=True";
+            lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnCadt.ca_codi.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj=" + loTxPesq.value + "&lcIdCida:IsNull=True&lcClFone:IsNull=True";
         }
-        else if (lcSlPesq == "id_cida") { lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida=" + lcTxPesq + "&lcClFone:IsNull=True"; }
-        else if (lcSlPesq == "cl_fone") { lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone=" + lcTxPesq; }
+        else if (lcSlPesq == "id_cida") { lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnCadt.ca_codi.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida=" + lcTxPesq + "&lcClFone:IsNull=True"; }
+        else if (lcSlPesq == "cl_fone") { lcWsHttp = pcWsHttp + "pesquisaClientes?lcIdEmpr=TRV&lcIdVend=" + poCnCadt.ca_codi.toString().trim() + "&lcIdClie:IsNull=True&lcClNome:IsNull=True&lcClCnpj:IsNull=True&lcIdCida:IsNull=True&lcClFone=" + lcTxPesq; }
 
         myApp.showIndicator();
 
@@ -159,7 +159,7 @@
         myApp.showIndicator();
 
         $.ajax({
-            url: pcWsHttp + "consultaInformacoesCliente?lcIdEmpr=TRV&lcIdClie=" + lcIdClie + "&lcIdVend=" + poCnVend.id_vend.toString().trim(),
+            url: pcWsHttp + "consultaInformacoesCliente?lcIdEmpr=TRV&lcIdClie=" + lcIdClie + "&lcIdVend=" + poCnCadt.ca_codi.toString().trim(),
             type: "GET",
             dataType: "jsonp",
             contentType: "application/json; charset=utf-8",

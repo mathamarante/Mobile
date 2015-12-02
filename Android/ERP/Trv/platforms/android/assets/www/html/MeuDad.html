@@ -23,7 +23,7 @@
 
         var lcNvSmd5 = md5(goTxNova.value.toString().trim().toUpperCase()).toUpperCase();
 
-        if (md5(goTxAtua.value.toString().trim().toUpperCase()).toUpperCase() != poCnVend.vd_smd5) {
+        if (md5(goTxAtua.value.toString().trim().toUpperCase()).toUpperCase() != poCnCadt.ca_smd5) {
             myApp.alert("SENHA ATUAL ERRADA", "ERRO");
             return false;
         }
@@ -31,7 +31,7 @@
         myApp.showIndicator();
 
         $.ajax({
-            url: pcWsHttp + "alteraSenha?lcIdEmpr=TRV&lcIdVend=" + poCnVend.id_vend.toString().trim() + "&lcVdSmd5=" + poCnVend.vd_smd5 + "&lcNvSmd5=" + lcNvSmd5,
+            url: pcWsHttp + "alteraSenha?lcIdEmpr=TRV&lcIdCadt=" + poCnCadt.id_cadt.toString().trim() + "&lcCaSmd5=" + poCnCadt.ca_smd5 + "&lcNvSmd5=" + lcNvSmd5,
             type: "GET",
             dataType: "jsonp",
             contentType: "application/json; charset=utf-8",
@@ -47,7 +47,7 @@
                         goTxNova.value = "";
                         goTxConf.value = "";
 
-                        poCnVend.vd_smd5 = lcNvSmd5;
+                        poCnCadt.ca_smd5 = lcNvSmd5;
                     }
                     else { myApp.alert("ERRO AO ALTERAR SENHA", "ERRO"); }
                 }
@@ -107,7 +107,7 @@
     var goAhSalv = document.getElementById("ahrSalv");
 
     $(document).ready(function () {
-        document.getElementById("divNome").innerHTML = poCnVend.vd_nome;
+        document.getElementById("divNome").innerHTML = poCnCadt.ca_nome;
 
         OkTecladoAndroid2("txtAtua", "txtNova");
 

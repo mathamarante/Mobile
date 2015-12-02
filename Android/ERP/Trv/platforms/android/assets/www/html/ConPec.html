@@ -1,10 +1,14 @@
 ﻿<script>
     function pesquisaPecas() {
+        goDvAplc.innerHTML = "";
+        goDvEquv.innerHTML = "";
+        goDvPeca.innerHTML = "";
+
         var lcDmCfab = "", lcDmDeno = "", lcTxPesq = goTxPesq.value.trim(), lcSlPesq = goSlPesq.value.trim();
 
         if (lcTxPesq == "") {
             myApp.alert("PESQUISA VAZIA", "ERRO");
-            limpaCampos();
+            limpaCamposConPec();
             return;
         }
         else if (lcSlPesq == "dm_cfab") {
@@ -31,17 +35,32 @@
 
                         lcPqPeca += "<div id='divCpec' class='row no-gutter'>";
                         lcPqPeca += "<div class='col-60'><b>DESCRIÇÃO</b></div>";
-                        lcPqPeca += "<div class='col-20'><b>COD. FABRICANTE</b></div>";
-                        lcPqPeca += "<div class='col-10'><b>ESTOQUE</b></div>";
-                        lcPqPeca += "<div class='col-10'><b>PREÇO</b></div>";
+                        lcPqPeca += "<div class='col-20'><b>COD. FABR.</b></div>";
+
+                        if (poCnCadt.ca_tipo.trim() == "C") {
+                            lcPqPeca += "<div class='col-20'><b>PREÇO</b></div>";
+                        }
+                        else {
+                            lcPqPeca += "<div class='col-10'><b>ESTQ</b></div>";
+                            lcPqPeca += "<div class='col-10'><b>PREÇO</b></div>";
+                        }
+
                         lcPqPeca += "</div>";
 
                         for (var x = 0; x < lmPqPeca.length; x++) {
-                            lcPqPeca += "<div id='divPec" + x.toString().trim() + "' onclick='pesquisaPecasEquivalentes(" + x + "); pesquisaAplicacoes(" + x + "); mudaCor(this);' class='row no-gutter'>";
+                            lcPqPeca += "<div id='divPec" + x.toString().trim() + "' onclick='pesquisaPecasEquivalentes(\"" + lmPqPeca[x].dm_cfab + "\"); pesquisaAplicacoes(\"" + lmPqPeca[x].dm_cfab + "\"); mudaCor(this);' class='row no-gutter'>";
                             lcPqPeca += "<div class='col-60'>" + lmPqPeca[x].dm_deno + "</div>";
-                            lcPqPeca += "<div id='divCfa" + x + "' class='col-20'>" + lmPqPeca[x].dm_cfab + "</div>";
-                            lcPqPeca += "<div class='col-10'>" + lmPqPeca[x].qt_sald + "</div>";
-                            lcPqPeca += "<div class='col-10'>" + brMoney(lmPqPeca[x].dm_pvar) + "</div>";
+
+                            if (poCnCadt.ca_tipo.trim() == "C") {
+                                lcPqPeca += "<div class='col-20'>" + lmPqPeca[x].dm_cfab + "</div>";
+                                lcPqPeca += "<div class='col-20'>" + brMoney(lmPqPeca[x].dm_pvar) + "</div>";
+                            }
+                            else {
+                                lcPqPeca += "<div class='col-20'><a href='#' onclick='adicionaCodigoFabricante(\"" + lmPqPeca[x].dm_cfab + "\")' class='button button-fill color-green'>" + lmPqPeca[x].dm_cfab + "</a></div>";
+                                lcPqPeca += "<div class='col-10'>" + lmPqPeca[x].qt_sald + "</div>";
+                                lcPqPeca += "<div class='col-10'>" + brMoney(lmPqPeca[x].dm_pvar) + "</div>";
+                            }
+
                             lcPqPeca += "</div>";
                         }
 
@@ -49,12 +68,12 @@
                     }
                     else {
                         myApp.alert("NENHUMA PEÇA ENCONTRADA", "ALERTA");
-                        limpaCampos();
+                        limpaCamposConPec();
                     }
                 }
                 catch (loWkErro) {
                     myApp.alert("ERRO AO PESQUISAR PEÇAS", "ERRO");
-                    limpaCampos();
+                    limpaCamposConPec();
                 }
 
                 myApp.hideIndicator();
@@ -62,14 +81,12 @@
             error: function () {
                 myApp.hideIndicator();
                 myApp.alert("ERRO AO PESQUISAR PEÇAS", "ERRO");
-                limpaCampos();
+                limpaCamposConPec();
             }
         });
     }
 
-    function pesquisaPecasEquivalentes(lnNrLnha) {
-        var lcDmCfab = document.getElementById("divCfa" + lnNrLnha.toString().trim()).innerHTML.trim();
-
+    function pesquisaPecasEquivalentes(lcDmCfab) {
         myApp.showIndicator();
 
         $.ajax({
@@ -85,17 +102,32 @@
 
                         lcPqPeca += "<div class='row no-gutter'>";
                         lcPqPeca += "<div class='col-60'><b>DESCRIÇÃO</b></div>";
-                        lcPqPeca += "<div class='col-20'><b>COD. FABRICANTE</b></div>";
-                        lcPqPeca += "<div class='col-10'><b>ESTOQUE</b></div>";
-                        lcPqPeca += "<div class='col-10'><b>PREÇO</b></div>";
+                        lcPqPeca += "<div class='col-20'><b>COD. FABR.</b></div>";
+
+                        if (poCnCadt.ca_tipo.trim() == "C") {
+                            lcPqPeca += "<div class='col-20'><b>PREÇO</b></div>";
+                        }
+                        else {
+                            lcPqPeca += "<div class='col-10'><b>ESTQ</b></div>";
+                            lcPqPeca += "<div class='col-10'><b>PREÇO</b></div>";
+                        }
+
                         lcPqPeca += "</div>";
 
                         for (var x = 0; x < lmPqPeca.length; x++) {
                             lcPqPeca += "<div class='row no-gutter'>";
                             lcPqPeca += "<div class='col-60'>" + lmPqPeca[x].dm_deno + "</div>";
-                            lcPqPeca += "<div class='col-20'>" + lmPqPeca[x].dm_cfab + "</div>";
-                            lcPqPeca += "<div class='col-10'>" + lmPqPeca[x].qt_sald + "</div>";
-                            lcPqPeca += "<div class='col-10'>" + brMoney(lmPqPeca[x].dm_pvar) + "</div>";
+
+                            if (poCnCadt.ca_tipo.trim() == "C") {
+                                lcPqPeca += "<div class='col-20'>" + lmPqPeca[x].dm_cfab + "</div>";
+                                lcPqPeca += "<div class='col-20'>" + brMoney(lmPqPeca[x].dm_pvar) + "</div>";
+                            }
+                            else {
+                                lcPqPeca += "<div class='col-20'><a href='#' onclick='adicionaCodigoFabricante(\"" + lmPqPeca[x].dm_cfab + "\")' class='button button-fill color-green'>" + lmPqPeca[x].dm_cfab + "</a></div>";
+                                lcPqPeca += "<div class='col-10'>" + lmPqPeca[x].qt_sald + "</div>";
+                                lcPqPeca += "<div class='col-10'>" + brMoney(lmPqPeca[x].dm_pvar) + "</div>";
+                            }
+
                             lcPqPeca += "</div>";
                         }
 
@@ -114,9 +146,7 @@
         });
     }
 
-    function pesquisaAplicacoes(lnNrLnha) {
-        var lcDmCfab = document.getElementById("divCfa" + lnNrLnha.toString().trim()).innerHTML.trim();
-
+    function pesquisaAplicacoes(lcDmCfab) {
         myApp.showIndicator();
 
         $.ajax({
@@ -131,10 +161,10 @@
                         var lcPqAplc = "", lcApPadr = "";
 
                         lcPqAplc += "<div class='row no-gutter'>";
-                        lcPqAplc += "<div class='col-5'><b>PD</b></div>";
-                        lcPqAplc += "<div class='col-40'><b>COD. FABRICANTE</b></div>";
-                        lcPqAplc += "<div class='col-40'><b>ESTOQUE</b></div>";
-                        lcPqAplc += "<div class='col-15'><b>ANO</b></div>";
+                        lcPqAplc += "<div class='col-10'><b>PD</b></div>";
+                        lcPqAplc += "<div class='col-40'><b>MARCA</b></div>";
+                        lcPqAplc += "<div class='col-40'><b>MODELO</b></div>";
+                        lcPqAplc += "<div class='col-10'><b>ANO</b></div>";
                         lcPqAplc += "</div>";
 
                         for (var x = 0; x < lmPqAplc.length; x++) {
@@ -145,10 +175,10 @@
                             if (lmPqAplc[x].ap_padr == 1) { lcApPadr = "X"; }
                             else { lcApPadr = ""; }
 
-                            lcPqAplc += "<div class='col-5'>" + lcApPadr + "</div>";
+                            lcPqAplc += "<div class='col-10'>" + lcApPadr + "</div>";
                             lcPqAplc += "<div class='col-40'>" + lmPqAplc[x].dm_marc + "</div>";
                             lcPqAplc += "<div class='col-40'>" + lmPqAplc[x].dm_mode + "</div>";
-                            lcPqAplc += "<div class='col-15'>" + lmPqAplc[x].ap_anof + "</div>";
+                            lcPqAplc += "<div class='col-10'>" + lmPqAplc[x].ap_anof + "</div>";
                             lcPqAplc += "</div>";
                         }
 
@@ -167,7 +197,13 @@
         });
     }
 
-    function limpaCampos() {
+    function adicionaCodigoFabricante(lcDmCfab) {
+        goTxCfab.value = lcDmCfab.trim();
+        goTxCfab.onblur();
+        myApp.showTab("#NovPed");
+    }
+
+    function limpaCamposConPec() {
         goTxPesq.value = "";
         goDvAplc.innerHTML = "";
         goDvEquv.innerHTML = "";
@@ -178,26 +214,36 @@
         $("#divPeca > div").each(function () {
             if (this.id != "divCpec") {
                 $("#" + this.id + " > div")[0].style.color = "";
-                $("#" + this.id + " > div")[1].style.color = "";
                 $("#" + this.id + " > div")[2].style.color = "";
-                $("#" + this.id + " > div")[3].style.color = "";
+                
+                if (poCnCadt.ca_tipo.trim() == "C") {
+                    $("#" + this.id + " > div")[1].style.color = "";
+                    $("#" + this.id + " > div")[1].style.fontWeight = "";
+                }
+                else {
+                    $("#" + this.id + " > div")[3].style.color = "";
+                    $("#" + this.id + " > div")[3].style.fontWeight = "";
+                }
 
                 $("#" + this.id + " > div")[0].style.fontWeight = "";
-                $("#" + this.id + " > div")[1].style.fontWeight = "";
                 $("#" + this.id + " > div")[2].style.fontWeight = "";
-                $("#" + this.id + " > div")[3].style.fontWeight = "";
             }
         });
 
         $("#" + loDvPeca.id + " > div")[0].style.color = "darkblue";
-        $("#" + loDvPeca.id + " > div")[1].style.color = "darkblue";
         $("#" + loDvPeca.id + " > div")[2].style.color = "darkblue";
-        $("#" + loDvPeca.id + " > div")[3].style.color = "darkblue";
+
+        if (poCnCadt.ca_tipo.trim() == "C") {
+            $("#" + loDvPeca.id + " > div")[1].style.color = "darkblue";
+            $("#" + loDvPeca.id + " > div")[1].style.fontWeight = "bold";
+        }
+        else {
+            $("#" + loDvPeca.id + " > div")[3].style.color = "darkblue";
+            $("#" + loDvPeca.id + " > div")[3].style.fontWeight = "bold";
+        }
 
         $("#" + loDvPeca.id + " > div")[0].style.fontWeight = "bold";
-        $("#" + loDvPeca.id + " > div")[1].style.fontWeight = "bold";
         $("#" + loDvPeca.id + " > div")[2].style.fontWeight = "bold";
-        $("#" + loDvPeca.id + " > div")[3].style.fontWeight = "bold";
     }
 
     //@ sourceURL=ConPec1.js
@@ -220,7 +266,7 @@
             <div class="item-content">
                 <div class="item-inner">
                     <div class="item-input">
-                        <input id="txtPesq" type="text" placeholder="DIGITE O TEXTO DA PESQUISA" onfocus="limpaCampos();" onblur="this.value = this.value.toUpperCase();" />
+                        <input id="txtPesq" type="text" placeholder="DIGITE O TEXTO DA PESQUISA" onfocus="limpaCamposConPec();" onblur="this.value = this.value.toUpperCase();" />
                     </div>
                 </div>
             </div>

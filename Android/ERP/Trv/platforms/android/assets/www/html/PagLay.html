@@ -13,7 +13,7 @@
         function sair() {
             myApp.confirm("DESEJA SAIR?", "ALERTA", function () {
                 myApp.showIndicator();
-                localStorage.removeItem("oUCnVend");
+                localStorage.removeItem("oUCnCadt");
                 window.location = "AutLgn.html";
             });
         }
@@ -36,7 +36,7 @@
     <div class="panel panel-left panel-cover">
         <div class="list-block">
             <ul>
-                <li>
+                <li id="lliInic">
                     <a href="#" onclick="redireciona('PagIni.html', 'INÍCIO');" class="item-link close-panel item-content">
                         <div class="item-media">
                             <img src="../img/inicio.png" />
@@ -46,7 +46,7 @@
                         </div>
                     </a>
                 </li>
-                <li>
+                <li id="lliClie">
                     <a href="#" onclick="redireciona('PsqCli.html', 'CLIENTES');" class="item-link close-panel item-content">
                         <div class="item-media">
                             <img src="../img/clientes.png" />
@@ -56,7 +56,7 @@
                         </div>
                     </a>
                 </li>
-                <li>
+                <li id="lliFinc">
                     <a href="#" onclick="redireciona('PosFin.html', 'FINANCEIRO');" class="item-link close-panel item-content">
                         <div class="item-media">
                             <img src="../img/financeiro.png" />
@@ -66,23 +66,33 @@
                         </div>
                     </a>
                 </li>
-                <li>
-                    <a href="#" onclick="redireciona('PsqPed.html', 'PEDIDOS');" class="item-link close-panel item-content">
-                        <div class="item-media">
-                            <img src="../img/pedidos.png" />
-                        </div>
-                        <div class="item-inner">
-                            <div class="item-title">PEDIDOS</div>
-                        </div>
-                    </a>
-                </li>
-                <li>
+                <li id="lliNovo">
                     <a href="#" onclick="redireciona('NovPed.html', 'NOVO PEDIDO');" class="item-link close-panel item-content">
                         <div class="item-media">
                             <img src="../img/novoPedido.png" />
                         </div>
                         <div class="item-inner">
                             <div class="item-title">NOVO PED.</div>
+                        </div>
+                    </a>
+                </li>
+                <li id="lliPeca">
+                    <a href="#" onclick="redireciona('ConPec.html', 'PEÇAS');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/pecas.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">PEÇAS</div>
+                        </div>
+                    </a>
+                </li>
+                <li id="lliPedi">
+                    <a href="#" onclick="redireciona('PsqPed.html', 'PEDIDOS');" class="item-link close-panel item-content">
+                        <div class="item-media">
+                            <img src="../img/pedidos.png" />
+                        </div>
+                        <div class="item-inner">
+                            <div class="item-title">PEDIDOS</div>
                         </div>
                     </a>
                 </li>
@@ -134,10 +144,17 @@
     <script type="text/javascript" src="../js/script.js"></script>
     <script>
         var poDvTitu = document.getElementById("divTitu");
+        var poLiInic = document.getElementById("lliInic");
+        var poLiClie = document.getElementById("lliClie");
+        var poLiFinc = document.getElementById("lliFinc");
+        var poLiNovo = document.getElementById("lliNovo");
+        var poLiPeca = document.getElementById("lliPeca");
+        var poLiPedi = document.getElementById("lliPedi");
+
         //var pcWsHttp = "http://localhost/VS2013/ERP/Trv/WebService/Application/Service.svc/";
-        var pcWsHttp = "http://192.168.5.216/ERP/Trv/WebService/Service.svc/";
-        //var pcWsHttp = "http://trevao.clientebasetech.com:6601/WebService/Service.svc/";
-        var poCnVend = {};
+        //var pcWsHttp = "http://192.168.5.216/ERP/Trv/WebService/Service.svc/";
+        var pcWsHttp = "http://trevao.clientebasetech.com:6601/WebService/Service.svc/";
+        var poCnCadt = {};
 
         var myApp = new Framework7({
             material: true,
@@ -151,12 +168,24 @@
         });
 
         $(document).ready(function () {
-            poCnVend = JSON.parse(localStorage.getItem("oUCnVend"));
+            poCnCadt = JSON.parse(localStorage.getItem("oUCnCadt"));
 
-            poDvTitu.innerHTML = "INÍCIO";
-            document.getElementById("spnUsua").innerHTML = poCnVend.vd_fant;
+            document.getElementById("spnUsua").innerHTML = poCnCadt.ca_fant;
 
-            $("#divPagi").load("PagIni.html");
+            if (poCnCadt.ca_tipo.trim() == "C") {
+                poDvTitu.innerHTML = "PEÇAS";
+                poLiInic.style.display = "none";
+                poLiClie.style.display = "none";
+                poLiFinc.style.display = "none";
+                poLiNovo.style.display = "none";
+                poLiPedi.style.display = "none";
+                $("#divPagi").load("ConPec.html");
+            }
+            else {
+                poDvTitu.innerHTML = "INÍCIO";
+                poLiPeca.style.display = "none";
+                $("#divPagi").load("PagIni.html");
+            }
         });
     </script>
 </body>

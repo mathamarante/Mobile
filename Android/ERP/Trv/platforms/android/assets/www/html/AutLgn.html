@@ -11,18 +11,18 @@
     <link rel="stylesheet" href="../framework7/css/framework7.material.colors.min.css">
     <link rel="stylesheet" href="../framework7/css/my-app.css">
     <script>
-        function consultaVendedor() {
-            var lcVdFant = goVdFant.value.toString().toUpperCase().trim();
-            var lcVdSenh = goVdSenh.value.toString().toUpperCase().trim();
+        function consultaCadastro() {
+            var lcCaFant = goTxUsua.value.toString().toUpperCase().trim().split(" ").join("");
+            var lcCaSenh = goTxSenh.value.toString().toUpperCase().trim();
 
-            if (lcVdFant == "") {
+            if (lcCaFant == "") {
                 myApp.alert("CAMPO USUÁRIO OBRIGATÓRIO", "ERRO");
 
                 limpaCampos();
 
                 return false;
             }
-            else if (lcVdSenh == "") {
+            else if (lcCaSenh == "") {
                 myApp.alert("CAMPO SENHA OBRIGATÓRIO", "ERRO");
 
                 limpaCampos();
@@ -30,42 +30,40 @@
                 return false;
             }
 
-            var lcVdSmd5 = md5(lcVdSenh).toUpperCase();
+            var lcCaSmd5 = md5(lcCaSenh).toUpperCase();
 
             myApp.showIndicator();
 
             $.ajax({
-                url: gcWsHttp + "consultaVendedor?lcIdEmpr=TRV&lcVdFant=" + lcVdFant + "&lcVdSmd5=" + lcVdSmd5,
+                url: gcWsHttp + "consultaCadastro?lcIdEmpr=TRV&lcCaFant=" + lcCaFant + "&lcCaSmd5=" + lcCaSmd5,
                 type: "GET",
                 dataType: "jsonp",
                 contentType: "application/json; charset=utf-8",
 
-                success: function (loCnVend) {
+                success: function (loWkRsql) {
                     myApp.hideIndicator();
                     limpaCampos();
 
                     try {
-                        if (loCnVend.id_cadt > 0) {
-                            localStorage.setItem("oUCnVend", JSON.stringify(loCnVend));
+                        if (loWkRsql.id_cadt > 0) {
+                            localStorage.setItem("oUCnCadt", JSON.stringify(loWkRsql));
                             window.location = "PagLay.html";
                         }
-                        else {
-                            myApp.alert("USUÁRIO OU SENHA INVALIDOS", "ERRO");
-                        }
+                        else { myApp.alert("USUÁRIO OU SENHA INVÁLIDOS", "ERRO"); }
                     }
-                    catch (loWkErro) { myApp.alert("USUÁRIO OU SENHA INVALIDOS", "ERRO"); }
+                    catch (loWkErro) { myApp.alert("USUÁRIO OU SENHA INVÁLIDOS", "ERRO"); }
                 },
                 error: function () {
                     myApp.hideIndicator();
                     limpaCampos();
-                    myApp.alert("USUÁRIO OU SENHA INVALIDOS", "ERRO");
+                    myApp.alert("USUÁRIO OU SENHA INVÁLIDOS", "ERRO");
                 }
             });
         }
 
         function limpaCampos() {
-            goVdFant.value = "";
-            goVdSenh.value = "";
+            goTxUsua.value = "";
+            goTxSenh.value = "";
         }
 
         function onLoad() { document.addEventListener("deviceready", onDeviceReady, false); }
@@ -132,7 +130,7 @@
                     </ul>
                 </div>
                 <p class="buttons-row">
-                    <a id="ahrEntr" href="#" onclick="consultaVendedor();" class="button button-fill button-raised">ENTRAR</a>
+                    <a id="ahrEntr" href="#" onclick="consultaCadastro();" class="button button-fill button-raised">ENTRAR</a>
                 </p>
                 <!--<p class="buttons-row">
                     <a id="ahrOffl" href="#" onclick="window.location = 'OffLay.html';" class="button button-fill button-raised">TRABALHAR OFFLINE</a>
@@ -148,11 +146,12 @@
     <script type="text/javascript" src="../js/md5.min.js"></script>
     <script type="text/javascript" src="../js/script.js"></script>
     <script>
-        var goVdFant = document.getElementById("txtUsua");
-        var goVdSenh = document.getElementById("txtSenh");
+        var goTxUsua = document.getElementById("txtUsua");
+        var goTxSenh = document.getElementById("txtSenh");
+
         //var gcWsHttp = "http://localhost/VS2013/ERP/Trv/WebService/Application/Service.svc/";
-        var gcWsHttp = "http://192.168.5.216/ERP/Trv/WebService/Service.svc/";
-        //var gcWsHttp = "http://trevao.clientebasetech.com:6601/WebService/Service.svc/";
+        //var gcWsHttp = "http://192.168.5.216/ERP/Trv/WebService/Service.svc/";
+        var gcWsHttp = "http://trevao.clientebasetech.com:6601/WebService/Service.svc/";
 
         var myApp = new Framework7({
             material: true
