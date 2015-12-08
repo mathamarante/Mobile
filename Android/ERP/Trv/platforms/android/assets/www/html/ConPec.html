@@ -34,8 +34,10 @@
                         var lcPqPeca = "";
 
                         lcPqPeca += "<div id='divCpec' class='row no-gutter'>";
-                        lcPqPeca += "<div class='col-60'><b>DESCRIÇÃO</b></div>";
-                        lcPqPeca += "<div class='col-20'><b>COD. FABR.</b></div>";
+                        lcPqPeca += "<div class='col-40'><b>DESCRIÇÃO</b></div>";
+                        lcPqPeca += "<div class='col-10'><b>UN</b></div>";
+                        lcPqPeca += "<div class='col-15'><b>FABR.</b></div>";
+                        lcPqPeca += "<div class='col-15'><b>COD. FABR.</b></div>";
 
                         if (poCnCadt.ca_tipo.trim() == "C") {
                             lcPqPeca += "<div class='col-20'><b>PREÇO</b></div>";
@@ -46,17 +48,19 @@
                         }
 
                         lcPqPeca += "</div>";
-
+                        //lnClPdes = parseFloat($("#" + this.id + " > div")[4].innerHTML.split(".").join("").replace(",", "."));
                         for (var x = 0; x < lmPqPeca.length; x++) {
-                            lcPqPeca += "<div id='divPec" + x.toString().trim() + "' onclick='pesquisaPecasEquivalentes(\"" + lmPqPeca[x].dm_cfab + "\"); pesquisaAplicacoes(\"" + lmPqPeca[x].dm_cfab + "\"); mudaCor(this);' class='row no-gutter'>";
-                            lcPqPeca += "<div class='col-60'>" + lmPqPeca[x].dm_deno + "</div>";
+                            lcPqPeca += "<div id='divPec" + x.toString().trim() + "' onclick='pesquisaPecasEquivalentes(\"" + lmPqPeca[x].dm_cfab + "\"); pesquisaAplicacoes(\"" + lmPqPeca[x].dm_cfab + "\"); mudaCor(this, \"" + replaceAll(lmPqPeca[x].dm_fot1, "\\", "_") + "\");' class='row no-gutter'>";
+                            lcPqPeca += "<div class='col-40'>" + lmPqPeca[x].dm_deno + "</div>";
+                            lcPqPeca += "<div class='col-10'>" + lmPqPeca[x].dm_unid + "</div>";
+                            lcPqPeca += "<div class='col-15'>" + lmPqPeca[x].dm_marc + "</div>";
 
                             if (poCnCadt.ca_tipo.trim() == "C") {
-                                lcPqPeca += "<div class='col-20'>" + lmPqPeca[x].dm_cfab + "</div>";
+                                lcPqPeca += "<div class='col-15'>" + lmPqPeca[x].dm_cfab + "</div>";
                                 lcPqPeca += "<div class='col-20'>" + brMoney(lmPqPeca[x].dm_pvar) + "</div>";
                             }
                             else {
-                                lcPqPeca += "<div class='col-20'><a href='#' onclick='adicionaCodigoFabricante(\"" + lmPqPeca[x].dm_cfab + "\")' class='button button-fill color-green'>" + lmPqPeca[x].dm_cfab + "</a></div>";
+                                lcPqPeca += "<div class='col-15'><a href='#' onclick='adicionaCodigoFabricante(\"" + lmPqPeca[x].dm_cfab + "\")' class='button button-fill color-green'>" + lmPqPeca[x].dm_cfab + "</a></div>";
                                 lcPqPeca += "<div class='col-10'>" + lmPqPeca[x].qt_sald + "</div>";
                                 lcPqPeca += "<div class='col-10'>" + brMoney(lmPqPeca[x].dm_pvar) + "</div>";
                             }
@@ -101,8 +105,10 @@
                         var lcPqPeca = "";
 
                         lcPqPeca += "<div class='row no-gutter'>";
-                        lcPqPeca += "<div class='col-60'><b>DESCRIÇÃO</b></div>";
-                        lcPqPeca += "<div class='col-20'><b>COD. FABR.</b></div>";
+                        lcPqPeca += "<div class='col-40'><b>DESCRIÇÃO</b></div>";
+                        lcPqPeca += "<div class='col-10'><b>UN</b></div>";
+                        lcPqPeca += "<div class='col-15'><b>FABR.</b></div>";
+                        lcPqPeca += "<div class='col-15'><b>COD. FABR.</b></div>";
 
                         if (poCnCadt.ca_tipo.trim() == "C") {
                             lcPqPeca += "<div class='col-20'><b>PREÇO</b></div>";
@@ -116,14 +122,16 @@
 
                         for (var x = 0; x < lmPqPeca.length; x++) {
                             lcPqPeca += "<div class='row no-gutter'>";
-                            lcPqPeca += "<div class='col-60'>" + lmPqPeca[x].dm_deno + "</div>";
+                            lcPqPeca += "<div class='col-40'>" + lmPqPeca[x].dm_deno + "</div>";
+                            lcPqPeca += "<div class='col-10'>" + lmPqPeca[x].dm_unid + "</div>";
+                            lcPqPeca += "<div class='col-15'>" + lmPqPeca[x].dm_marc + "</div>";
 
                             if (poCnCadt.ca_tipo.trim() == "C") {
-                                lcPqPeca += "<div class='col-20'>" + lmPqPeca[x].dm_cfab + "</div>";
+                                lcPqPeca += "<div class='col-15'>" + lmPqPeca[x].dm_cfab + "</div>";
                                 lcPqPeca += "<div class='col-20'>" + brMoney(lmPqPeca[x].dm_pvar) + "</div>";
                             }
                             else {
-                                lcPqPeca += "<div class='col-20'><a href='#' onclick='adicionaCodigoFabricante(\"" + lmPqPeca[x].dm_cfab + "\")' class='button button-fill color-green'>" + lmPqPeca[x].dm_cfab + "</a></div>";
+                                lcPqPeca += "<div class='col-15'><a href='#' onclick='adicionaCodigoFabricante(\"" + lmPqPeca[x].dm_cfab + "\")' class='button button-fill color-green'>" + lmPqPeca[x].dm_cfab + "</a></div>";
                                 lcPqPeca += "<div class='col-10'>" + lmPqPeca[x].qt_sald + "</div>";
                                 lcPqPeca += "<div class='col-10'>" + brMoney(lmPqPeca[x].dm_pvar) + "</div>";
                             }
@@ -162,9 +170,10 @@
 
                         lcPqAplc += "<div class='row no-gutter'>";
                         lcPqAplc += "<div class='col-10'><b>PD</b></div>";
-                        lcPqAplc += "<div class='col-40'><b>MARCA</b></div>";
-                        lcPqAplc += "<div class='col-40'><b>MODELO</b></div>";
-                        lcPqAplc += "<div class='col-10'><b>ANO</b></div>";
+                        lcPqAplc += "<div class='col-25'><b>MARCA</b></div>";
+                        lcPqAplc += "<div class='col-25'><b>MODELO</b></div>";
+                        lcPqAplc += "<div class='col-15'><b>ANO</b></div>";
+                        lcPqAplc += "<div class='col-25'><b>OBSE</b></div>";
                         lcPqAplc += "</div>";
 
                         for (var x = 0; x < lmPqAplc.length; x++) {
@@ -176,9 +185,10 @@
                             else { lcApPadr = ""; }
 
                             lcPqAplc += "<div class='col-10'>" + lcApPadr + "</div>";
-                            lcPqAplc += "<div class='col-40'>" + lmPqAplc[x].dm_marc + "</div>";
-                            lcPqAplc += "<div class='col-40'>" + lmPqAplc[x].dm_mode + "</div>";
-                            lcPqAplc += "<div class='col-10'>" + lmPqAplc[x].ap_anof + "</div>";
+                            lcPqAplc += "<div class='col-25'>" + lmPqAplc[x].dm_marc + "</div>";
+                            lcPqAplc += "<div class='col-25'>" + lmPqAplc[x].dm_mode + "</div>";
+                            lcPqAplc += "<div class='col-15'>" + lmPqAplc[x].ap_anof + "</div>";
+                            lcPqAplc += "<div class='col-25'>" + lmPqAplc[x].ap_obse + "</div>";
                             lcPqAplc += "</div>";
                         }
 
@@ -208,42 +218,59 @@
         goDvAplc.innerHTML = "";
         goDvEquv.innerHTML = "";
         goDvPeca.innerHTML = "";
+        goImFot1.style.display = "none";
     }
 
-    function mudaCor(loDvPeca) {
+    function mudaCor(loDvPeca, lcDmFot1) {
+        if (lcDmFot1.trim() != "") {
+            goImFot1.style.display = "";
+            goImFot1.src = "http://trevao.clientebasetech.com:6601/" + replaceAll(lcDmFot1, "_", "\\");
+        }
+        else {
+            goImFot1.style.display = "none";
+        }
+
         $("#divPeca > div").each(function () {
             if (this.id != "divCpec") {
                 $("#" + this.id + " > div")[0].style.color = "";
+                $("#" + this.id + " > div")[1].style.color = "";
                 $("#" + this.id + " > div")[2].style.color = "";
-                
+                $("#" + this.id + " > div")[4].style.color = "";
+
+                $("#" + this.id + " > div")[0].style.fontWeight = "";
+                $("#" + this.id + " > div")[1].style.fontWeight = "";
+                $("#" + this.id + " > div")[2].style.fontWeight = "";
+                $("#" + this.id + " > div")[4].style.fontWeight = "";
+
                 if (poCnCadt.ca_tipo.trim() == "C") {
-                    $("#" + this.id + " > div")[1].style.color = "";
-                    $("#" + this.id + " > div")[1].style.fontWeight = "";
-                }
-                else {
                     $("#" + this.id + " > div")[3].style.color = "";
                     $("#" + this.id + " > div")[3].style.fontWeight = "";
                 }
-
-                $("#" + this.id + " > div")[0].style.fontWeight = "";
-                $("#" + this.id + " > div")[2].style.fontWeight = "";
+                else {
+                    $("#" + this.id + " > div")[5].style.color = "";
+                    $("#" + this.id + " > div")[5].style.fontWeight = "";
+                }
             }
         });
 
         $("#" + loDvPeca.id + " > div")[0].style.color = "darkblue";
+        $("#" + loDvPeca.id + " > div")[1].style.color = "darkblue";
         $("#" + loDvPeca.id + " > div")[2].style.color = "darkblue";
+        $("#" + loDvPeca.id + " > div")[4].style.color = "darkblue";
+
+        $("#" + loDvPeca.id + " > div")[0].style.fontWeight = "bold";
+        $("#" + loDvPeca.id + " > div")[1].style.fontWeight = "bold";
+        $("#" + loDvPeca.id + " > div")[2].style.fontWeight = "bold";
+        $("#" + loDvPeca.id + " > div")[4].style.fontWeight = "bold";
 
         if (poCnCadt.ca_tipo.trim() == "C") {
-            $("#" + loDvPeca.id + " > div")[1].style.color = "darkblue";
-            $("#" + loDvPeca.id + " > div")[1].style.fontWeight = "bold";
-        }
-        else {
             $("#" + loDvPeca.id + " > div")[3].style.color = "darkblue";
             $("#" + loDvPeca.id + " > div")[3].style.fontWeight = "bold";
         }
-
-        $("#" + loDvPeca.id + " > div")[0].style.fontWeight = "bold";
-        $("#" + loDvPeca.id + " > div")[2].style.fontWeight = "bold";
+        else {
+            $("#" + loDvPeca.id + " > div")[5].style.color = "darkblue";
+            $("#" + loDvPeca.id + " > div")[5].style.fontWeight = "bold";
+        }
     }
 
     //@ sourceURL=ConPec1.js
@@ -274,6 +301,11 @@
     </ul>
 </div>
 <a id="ahrPesq" href="#" onclick="pesquisaPecas();" class="button button-fill button-raised">PESQUISAR</a>
+<br />
+<br />
+<div style="text-align: center;">
+    <img id="imgFot1" style="width: 30%; display: none;" />
+</div>
 <div class="list-block">
     <ul>
         <li class="item-divider">APLICAÇÃO</li>
@@ -298,6 +330,7 @@
     var goDvAplc = document.getElementById("divAplc");
     var goDvEquv = document.getElementById("divEquv");
     var goDvPeca = document.getElementById("divPeca");
+    var goImFot1 = document.getElementById("imgFot1");
 
     $(document).ready(function () {
         OkTecladoAndroid3("txtPesq", "ahrPesq", "ahrPesq");
