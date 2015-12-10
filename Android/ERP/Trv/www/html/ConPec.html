@@ -1,29 +1,130 @@
 ﻿<script>
+    function pesquisaMarcas() {
+        $("#sltMarc").html("<option value='0'>CARREGANDO MARCAS...</option>").show();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaMarcas?lcIdEmpr=TRV",
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmWkRsql) {
+                try {
+                    if (lmWkRsql.length > 0) {
+                        var lcWkRsql = "<option value='0'></option>";
+
+                        for (var x = 0; x < lmWkRsql.length; x++) { lcWkRsql += "<option value='" + lmWkRsql[x].id_marc + "'>" + lmWkRsql[x].mm_deno + "</option>"; }
+
+                        $("#sltMarc").html(lcWkRsql).show();
+                    }
+                    else { $("#sltMarc").html("<option value='0'>NENHUMA MARCA ENCONTRADA...</option>").show(); }
+                }
+                catch (loWkErro) { $("#sltMarc").html("<option value='0'>NENHUMA MARCA ENCONTRADA...</option>").show(); }
+            },
+            error: function () { $("#sltMarc").html("<option value='0'>NENHUMA MARCA ENCONTRADA...</option>").show(); }
+        });
+    }
+
+    function pesquisaModelos() {
+        goSlMode.disabled = true;
+
+        lcIdMarc = goSlMarc.value.toString().trim();
+
+        $("#sltMode").html("<option value='0'>CARREGANDO MODELOS...</option>").show();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaModelos?lcIdEmpr=TRV&lcIdMarc=" + lcIdMarc,
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmWkRsql) {
+                try {
+                    if (lmWkRsql.length > 0) {
+                        pesquisaTipos();
+
+                        var lcWkRsql = "";
+
+                        for (var x = 0; x < lmWkRsql.length; x++) { lcWkRsql += "<option value='" + lmWkRsql[x].id_mode + "'>" + lmWkRsql[x].mm_deno + "</option>"; }
+
+                        goSlMode.disabled = false;
+
+                        $("#sltMode").html(lcWkRsql).show();
+                    }
+                    else { limpaCamposConPec(); }
+                }
+                catch (loWkErro) { limpaCamposConPec(); }
+            },
+            error: function () { limpaCamposConPec(); }
+        });
+    }
+
+    function pesquisaTipos() {
+        goSlTipo.disabled = true;
+
+        $("#sltTipo").html("<option value='0'>CARREGANDO TIPOS...</option>").show();
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaTipos?lcIdEmpr=TRV",
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmWkRsql) {
+                try {
+                    if (lmWkRsql.length > 0) {
+                        var lcWkRsql = "<option value='null'>TODOS</option>";
+
+                        for (var x = 0; x < lmWkRsql.length; x++) { lcWkRsql += "<option value='" + lmWkRsql[x].id_tppc + "'>" + lmWkRsql[x].tp_deno + "</option>"; }
+
+                        goSlTipo.disabled = false;
+
+                        $("#sltTipo").html(lcWkRsql).show();
+                    }
+                    else { limpaCamposConPec(); }
+                }
+                catch (loWkErro) { limpaCamposConPec(); }
+            },
+            error: function () { limpaCamposConPec(); }
+        });
+    }
+
     function pesquisaPecas() {
         goDvAplc.innerHTML = "";
         goDvEquv.innerHTML = "";
         goDvPeca.innerHTML = "";
 
-        var lcDmCfab = "", lcDmDeno = "", lcTxPesq = goTxPesq.value.trim(), lcSlPesq = goSlPesq.value.trim();
+        var lcDmCfab = "", lcDmDeno = "", lcTxPesq = goTxPesq.value.trim(), lcSlPesq = goSlPesq.value.trim(), lcWsHttp = "", lcIdTppc = "";
 
-        if (lcTxPesq == "") {
+        if (lcTxPesq == "" && goSlMarc.value == "0") {
             myApp.alert("PESQUISA VAZIA", "ERRO");
             limpaCamposConPec();
             return;
         }
-        else if (lcSlPesq == "dm_cfab") {
-            lcDmCfab = "=" + lcTxPesq;
-            lcDmDeno = ":IsNull=True";
+
+        if (lcTxPesq != "") {
+            if (lcSlPesq == "dm_cfab") {
+                lcDmCfab = "=" + lcTxPesq;
+                lcDmDeno = ":IsNull=True";
+            }
+            else if (lcSlPesq == "dm_deno") {
+                lcDmCfab = ":IsNull=True";
+                lcDmDeno = "=" + lcTxPesq;
+            }
+
+            lcWsHttp = "pesquisaPecas?lcIdEmpr=TRV&lcIdFili=1&lcIdSitu=1&lcDmCfab" + lcDmCfab + "&lcDmDeno" + lcDmDeno;
         }
-        else if (lcSlPesq == "dm_deno") {
-            lcDmCfab = ":IsNull=True";
-            lcDmDeno = "=" + lcTxPesq;
+        else if (goSlMarc.value != "0") {
+            if (goSlTipo.value == "null") { lcIdTppc = ":IsNull=True"; }
+            else { lcIdTppc = "=" + goSlTipo.value; }
+
+            lcWsHttp = "pesquisaPecasMarcaModelo?lcIdEmpr=TRV&lcIdMarc=" + goSlMarc.value + "&lcIdMode=" + goSlMode.value + "&lcIdTppc" + lcIdTppc;
         }
 
         myApp.showIndicator();
 
         $.ajax({
-            url: pcWsHttp + "pesquisaPecas?lcIdEmpr=TRV&lcIdFili=1&lcIdSitu=1&lcDmCfab" + lcDmCfab + "&lcDmDeno" + lcDmDeno,
+            url: pcWsHttp + lcWsHttp,
             type: "GET",
             dataType: "jsonp",
             contentType: "application/json; charset=utf-8",
@@ -48,7 +149,7 @@
                         }
 
                         lcPqPeca += "</div>";
-                        //lnClPdes = parseFloat($("#" + this.id + " > div")[4].innerHTML.split(".").join("").replace(",", "."));
+                        
                         for (var x = 0; x < lmPqPeca.length; x++) {
                             lcPqPeca += "<div id='divPec" + x.toString().trim() + "' onclick='pesquisaPecasEquivalentes(\"" + lmPqPeca[x].dm_cfab + "\"); pesquisaAplicacoes(\"" + lmPqPeca[x].dm_cfab + "\"); mudaCor(this, \"" + replaceAll(lmPqPeca[x].dm_fot1, "\\", "_") + "\");' class='row no-gutter'>";
                             lcPqPeca += "<div class='col-40'>" + lmPqPeca[x].dm_deno + "</div>";
@@ -219,6 +320,14 @@
         goDvEquv.innerHTML = "";
         goDvPeca.innerHTML = "";
         goImFot1.style.display = "none";
+
+        goSlMarc.selectedIndex = 0;
+
+        goSlMode.disabled = true;
+        goSlTipo.disabled = true;
+
+        $("#sltMode").html("").show();
+        $("#sltTipo").html("").show();
     }
 
     function mudaCor(loDvPeca, lcDmFot1) {
@@ -298,6 +407,36 @@
                 </div>
             </div>
         </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">MARCA</div>
+                    <div class="item-input">
+                        <select id="sltMarc" onfocus="limpaCamposConPec();" onchange="pesquisaModelos();" ></select>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">MODELO</div>
+                    <div class="item-input">
+                        <select id="sltMode" disabled></select>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="item-content">
+                <div class="item-inner">
+                    <div class="item-title label">TIPO</div>
+                    <div class="item-input">
+                        <select id="sltTipo" disabled></select>
+                    </div>
+                </div>
+            </div>
+        </li>
     </ul>
 </div>
 <a id="ahrPesq" href="#" onclick="pesquisaPecas();" class="button button-fill button-raised">PESQUISAR</a>
@@ -331,8 +470,13 @@
     var goDvEquv = document.getElementById("divEquv");
     var goDvPeca = document.getElementById("divPeca");
     var goImFot1 = document.getElementById("imgFot1");
+    var goSlMarc = document.getElementById("sltMarc");
+    var goSlMode = document.getElementById("sltMode");
+    var goSlTipo = document.getElementById("sltTipo");
 
     $(document).ready(function () {
         OkTecladoAndroid3("txtPesq", "ahrPesq", "ahrPesq");
+
+        pesquisaMarcas();
     });
 </script>
