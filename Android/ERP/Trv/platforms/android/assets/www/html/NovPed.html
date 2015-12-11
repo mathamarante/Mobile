@@ -91,6 +91,78 @@
         });
     }
 
+    function pesquisaUltimosPedidos(llUlProx) {
+        myApp.showIndicator();
+
+        if (gmUlPedi.length > 0) {
+            myApp.hideIndicator();
+
+            consultaUltimoProximoOrcamento(llUlProx);
+
+            return;
+        }
+
+        $.ajax({
+            url: pcWsHttp + "pesquisaUltimosPedidos?lcIdEmpr=TRV&lcIdVend=" + poCnCadt.ca_codi.toString().trim(),
+            type: "GET",
+            dataType: "jsonp",
+            contentType: "application/json; charset=utf-8",
+
+            success: function (lmWkRsql) {
+                myApp.hideIndicator();
+
+                try {
+                    if (lmWkRsql.length > 0) {
+                        gmUlPedi = lmWkRsql;
+                        consultaUltimoProximoOrcamento(llUlProx);
+                    }
+                    else {
+                        myApp.alert("NENHUM ORÇAMENTO ENCONTRADO", "ERRO");
+                        limpaCampos();
+                    }
+                }
+                catch (loWkErro) {
+                    myApp.alert("NENHUM ORÇAMENTO ENCONTRADO", "ERRO");
+                    limpaCampos();
+                }
+            },
+            error: function () {
+                myApp.hideIndicator();
+                myApp.alert("NENHUM ORÇAMENTO ENCONTRADO", "ERRO");
+                limpaCampos();
+            }
+        });
+    }
+
+    function consultaUltimoProximoOrcamento(llUlProx) {
+        if (llUlProx == 1) {
+            try {
+                gnCtVolt++;
+                goNrOrca.onfocus();
+                goNrOrca.value = gmUlPedi[gnCtVolt].toString().trim();
+                goNrOrca.onblur();
+            }
+            catch (loWkErro) {
+                myApp.alert("ÚLTIMO PEDIDO DO VENDEDOR", "ERRO");
+                gnCtVolt = -1;
+                limpaCampos();
+            }
+        }
+        else if (llUlProx == 2) {
+            try {
+                gnCtVolt--;
+                goNrOrca.onfocus();
+                goNrOrca.value = gmUlPedi[gnCtVolt].toString().trim();
+                goNrOrca.onblur();
+            }
+            catch (loWkErro) {
+                myApp.alert("ÚLTIMO PEDIDO DO VENDEDOR", "ERRO");
+                gnCtVolt = -1;
+                limpaCampos();
+            }
+        }
+    }
+
     function pesquisaClientes() {
         goSlClie.disabled = true;
 
@@ -709,6 +781,10 @@
         goTxPdcp.value = "";
         goTaObse.value = "";
 
+        //gnCtVolt = -1;
+
+        //gmUlPedi = [];
+
         $("#divMvpr > div").each(function () {
             if (this.id != "divCabe") { removeProdutoPedido($("#" + this.id + " > div")[0].innerHTML.trim()); }
         });
@@ -742,13 +818,19 @@
                         </div>
                     </div>
                 </li>
+                <li>
+                    <p class="buttons-row">
+                        <a href="#" onclick="pesquisaUltimosPedidos(1)" class="button button-raised">ÚLT. ORÇA.</a>
+                        <a href="#" onclick="pesquisaUltimosPedidos(2)" class="button button-raised">PRÓX. ORÇA.</a>
+                    </p>
+                </li>
                 <li class="item-divider">CLIENTE</li>
                 <li>
                     <div class="item-content">
                         <div class="item-inner">
                             <div class="item-title label" style="color: red;">CÓD. CLIENTE</div>
                             <div class="item-input">
-                                <input id="numClie" type="number" min="1" step="1" placeholder="DIGITE O CÓDIGO DO CLIENTE" onblur="consultaInformacoesCliente();" onfocus="limpaCamposCliente();">
+                                <input id="numClie" type="number" min="1" step="1" placeholder="DIGITE O CÓDIGO DO CLIENTE" onblur="consultaInformacoesCliente();" onfocus="limpaCampos();">
                             </div>
                         </div>
                     </div>
@@ -938,7 +1020,8 @@
     var goTxPdcp = document.getElementById("txtPdcp");
     var goTaObse = document.getElementById("txaObse");
     var ldDtHoje = new Date();
-    var gnDmPdes = 100, gnDmPvar = 0, gnDmQemb = 0, gnDmQtpr = 0, gnDmProm = 0, gnWkPrun = 0, gnDmPcus = 0, gnDmPatc = 0, gnDmPdis = 0;
+    var gnDmPdes = 100, gnDmPvar = 0, gnDmQemb = 0, gnDmQtpr = 0, gnDmProm = 0, gnWkPrun = 0, gnDmPcus = 0, gnDmPatc = 0, gnDmPdis = 0, gnCtVolt = -1;
+    var gmUlPedi = [];
 
     $(document).ready(function () {
         goDvData.innerHTML = objetoDataParaStringData(ldDtHoje);

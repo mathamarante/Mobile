@@ -94,7 +94,7 @@
         goDvEquv.innerHTML = "";
         goDvPeca.innerHTML = "";
 
-        var lcDmCfab = "", lcDmDeno = "", lcTxPesq = goTxPesq.value.trim(), lcSlPesq = goSlPesq.value.trim(), lcWsHttp = "", lcIdTppc = "";
+        var lcDmCfab = "", lcDmDeno = "", lcTxPesq = goTxPesq.value.trim(), lcSlPesq = goSlPesq.value.trim(), lcWsHttp = "", lcIdTppc = "", lcDmMarc = "";
 
         if (lcTxPesq == "" && goSlMarc.value == "0") {
             myApp.alert("PESQUISA VAZIA", "ERRO");
@@ -106,13 +106,20 @@
             if (lcSlPesq == "dm_cfab") {
                 lcDmCfab = "=" + lcTxPesq;
                 lcDmDeno = ":IsNull=True";
+                lcDmMarc = ":IsNull=True";
             }
             else if (lcSlPesq == "dm_deno") {
                 lcDmCfab = ":IsNull=True";
                 lcDmDeno = "=" + lcTxPesq;
+                lcDmMarc = ":IsNull=True";
+            }
+            else if (lcSlPesq == "dm_marc") {
+                lcDmCfab = ":IsNull=True";
+                lcDmDeno = ":IsNull=True";
+                lcDmMarc = "=" + lcTxPesq;
             }
 
-            lcWsHttp = "pesquisaPecas?lcIdEmpr=TRV&lcIdFili=1&lcIdSitu=1&lcDmCfab" + lcDmCfab + "&lcDmDeno" + lcDmDeno;
+            lcWsHttp = "pesquisaPecas?lcIdEmpr=TRV&lcIdFili=1&lcIdSitu=1&lcDmCfab" + lcDmCfab + "&lcDmDeno" + lcDmDeno + "&lcDmMarc" + lcDmMarc;
         }
         else if (goSlMarc.value != "0") {
             if (goSlTipo.value == "null") { lcIdTppc = ":IsNull=True"; }
@@ -137,7 +144,7 @@
                         lcPqPeca += "<div id='divCpec' class='row no-gutter'>";
                         lcPqPeca += "<div class='col-40'><b>DESCRIÇÃO</b></div>";
                         lcPqPeca += "<div class='col-10'><b>UN</b></div>";
-                        lcPqPeca += "<div class='col-15'><b>FABR.</b></div>";
+                        lcPqPeca += "<div class='col-15'><b>MARCA</b></div>";
                         lcPqPeca += "<div class='col-15'><b>COD. FABR.</b></div>";
 
                         if (poCnCadt.ca_tipo.trim() == "C") {
@@ -208,7 +215,7 @@
                         lcPqPeca += "<div class='row no-gutter'>";
                         lcPqPeca += "<div class='col-40'><b>DESCRIÇÃO</b></div>";
                         lcPqPeca += "<div class='col-10'><b>UN</b></div>";
-                        lcPqPeca += "<div class='col-15'><b>FABR.</b></div>";
+                        lcPqPeca += "<div class='col-15'><b>MARCA</b></div>";
                         lcPqPeca += "<div class='col-15'><b>COD. FABR.</b></div>";
 
                         if (poCnCadt.ca_tipo.trim() == "C") {
@@ -393,6 +400,7 @@
                         <select id="sltPesq" name="sltPesq">
                             <option value="dm_cfab" selected="selected">CÓDIGO DO FABRICANTE</option>
                             <option value="dm_deno">DESCRIÇÃO</option>
+                            <option value="dm_marc">MARCA</option>
                         </select>
                     </div>
                 </div>
