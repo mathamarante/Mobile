@@ -77,7 +77,7 @@
     </script>
 
     <style>
-        #divLgin {
+        #vdoLgin {
             position: fixed;
             top: -50%;
             left: -50%;
@@ -85,7 +85,7 @@
             height: 200%;
         }
 
-            #divLgin img {
+            #vdoLgin img {
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -102,12 +102,15 @@
         <div class="view view-main">
             <div class="pages">
                 <div data-page="AutLgn" class="page">
-                    <div id="divLgin">
+                    <video id="vdoLgin" preload="auto" autoplay loop muted>
+                        <source type="video/mp4" src="img/ats.mp4" />
+                    </video>
+                    <!--<div id="vdoLgin">
                         <img src="img/login.jpg">
-                    </div>
+                    </div>-->
                     <div class="page-content">
                         <div class="content-block">
-                            <p><a href="#" class="open-login-screen button button-fill button-raised">ENTRAR</a></p>
+                            <p><a href="#" class="open-login-screen button button-fill button-raised">JÁ TENHO CADASTRO</a></p>
                         </div>
                     </div>
                 </div>
@@ -162,6 +165,7 @@
     <script>
         var goTxUsua = document.getElementById("txtUsua");
         var goTxSenh = document.getElementById("txtSenh");
+        var gcWsHttp = "http://localhost/VS2013/ERP/Ats/WebService/Application/Service.svc/";
 
         var myApp = new Framework7({
             material: true,
