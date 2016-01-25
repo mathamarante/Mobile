@@ -32,8 +32,6 @@
 
             var lcCaSmd5 = md5(lcCaSenh).toUpperCase();
 
-            //myApp.showIndicator();
-
             $.ajax({
                 url: gcWsHttp + "consultaCadastro?lcIdEmpr=AMT&lcCaFant=" + lcCaFant + "&lcCaSmd5=" + lcCaSmd5,
                 type: "GET",
@@ -41,7 +39,6 @@
                 contentType: "application/json; charset=utf-8",
 
                 success: function (loWkRsql) {
-                    //myApp.hideIndicator();
                     limpaCampos();
 
                     try {
@@ -165,8 +162,8 @@
     <script>
         var goTxUsua = document.getElementById("txtUsua");
         var goTxSenh = document.getElementById("txtSenh");
-        var gcWsHttp = "http://localhost/VS2013/ERP/Ats/WebService/Application/Service.svc/";
-
+        var gcWsHttp = "http://localhost/VS2013/ERP/ATS/WebService/Application/Service.svc/";
+        
         var myApp = new Framework7({
             material: true,
 
@@ -176,6 +173,14 @@
             onAjaxComplete: function (xhr) {
                 myApp.hideIndicator();
             }
+        });
+
+        $(document).ajaxSend(function (event, request, settings) {
+            myApp.showIndicator();
+        });
+
+        $(document).ajaxComplete(function (event, request, settings) {
+            myApp.hideIndicator();
         });
 
     </script>

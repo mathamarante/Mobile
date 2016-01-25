@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <title>ATS Consultoria e Sistemas</title>
+    <link rel="stylesheet" href="framework7/css/framework7.material.min.css">
+    <link rel="stylesheet" href="framework7/css/framework7.material.colors.min.css">
+    <link rel="stylesheet" href="framework7/css/my-app.css">
+    <script>
+        function onLoad() { document.addEventListener("deviceready", onDeviceReady, false); }
+
+        function onDeviceReady() { document.addEventListener("backbutton", sair, false); }
+
+        function sair() {
+            navigator.app.exitApp();
+        }
+    </script>
+</head>
+<body onload="onLoad()">
+    <div class="views">
+        <div class="view view-main">
+            <div class="pages navbar-fixed toolbar-fixed">
+                <div data-page="index" class="page">
+                    <div class="navbar">
+                        <div class="navbar-inner">
+                            <div class="center">Awesome App</div>
+                        </div>
+                    </div>
+                    <div class="toolbar">
+                        <div class="toolbar-inner">
+                            <a href="#" class="link">Link 1</a>
+                            <a href="#" class="link">Link 2</a>
+                        </div>
+                    </div>
+                    <div class="page-content">
+                        <p>Page content goes here</p>
+                        <a href="about.html">About app</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="framework7/js/framework7.min.js"></script>
+    <script type="text/javascript" src="framework7/js/my-app.js"></script>
+    <script type="text/javascript" src="js/jquery-2.2.0.min.js"></script>
+    <script>
+        var pcWsHttp = "http://localhost/VS2013/ERP/ATS/WebService/Application/Service.svc/";
+
+        var myApp = new Framework7({
+            material: true,
+
+            onAjaxStart: function (xhr) {
+                myApp.showIndicator();
+            },
+            onAjaxComplete: function (xhr) {
+                myApp.hideIndicator();
+            }
+        });
+
+        $(document).ajaxSend(function (event, request, settings) {
+            myApp.showIndicator();
+        });
+
+        $(document).ajaxComplete(function (event, request, settings) {
+            myApp.hideIndicator();
+        });
+
+    </script>
+</body>
+</html> 
