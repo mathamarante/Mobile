@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <title>ATS Consultoria e Sistemas</title>
+    <link rel="stylesheet" href="framework7/css/framework7.material.min.css">
+    <link rel="stylesheet" href="framework7/css/framework7.material.colors.min.css">
+    <link rel="stylesheet" href="framework7/css/my-app.css">
+    <script>
+        function onLoad() { document.addEventListener("deviceready", onDeviceReady, false); }
+
+        function onDeviceReady() { document.addEventListener("backbutton", volta, false); }
+
+        function volta() {
+            window.location = "AutLgn.html";
+        }
+    </script>
+</head>
+<body onload="onLoad()">
+    <div class="views">
+        <div class="view view-main">
+            <div data-page="EnvMai" class="page">
+                <div class="page-content">
+                    <div class="list-block">
+                        <ul>
+                            <li>
+                                <div class="item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title label">NOME</div>
+                                        <div class="item-input">
+                                            <input type="text" placeholder="DIGITE SEU NOME">
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title label">E-MAIL</div>
+                                        <div class="item-input">
+                                            <input type="email" placeholder="DIGITE SEU E-MAIL">
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title label">TELEFONE</div>
+                                        <div class="item-input">
+                                            <input type="text" placeholder="DIGITE SEU TELEFONE">
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="framework7/js/framework7.min.js"></script>
+    <script type="text/javascript" src="framework7/js/my-app.js"></script>
+    <script type="text/javascript" src="js/jquery-2.2.0.min.js"></script>
+    <script>
+        var pcWsHttp = "http://localhost/VS2013/ERP/ATS/WebService/Application/Service.svc/";
+
+        var myApp = new Framework7({
+            material: true,
+
+            onAjaxStart: function (xhr) {
+                myApp.showIndicator();
+            },
+            onAjaxComplete: function (xhr) {
+                myApp.hideIndicator();
+            }
+        });
+
+        $(document).ajaxSend(function (event, request, settings) {
+            myApp.showIndicator();
+        });
+
+        $(document).ajaxComplete(function (event, request, settings) {
+            myApp.hideIndicator();
+        });
+
+    </script>
+</body>
+</html> 

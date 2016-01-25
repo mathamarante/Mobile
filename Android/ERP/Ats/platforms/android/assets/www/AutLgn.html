@@ -94,20 +94,21 @@
             }
     </style>
 </head>
-<body onload="onLoad()">
+<body onload="onLoad()" class="theme-red">
     <div class="views">
         <div class="view view-main">
             <div class="pages">
                 <div data-page="AutLgn" class="page">
-                    <video id="vdoLgin" preload="auto" autoplay loop muted>
+                    <video id="vdoLgin" preload="auto" autoplay loop muted style="opacity: 0.5;">
                         <source type="video/mp4" src="img/ats.mp4" />
                     </video>
-                    <!--<div id="vdoLgin">
-                        <img src="img/login.jpg">
-                    </div>-->
                     <div class="page-content">
                         <div class="content-block">
-                            <p><a href="#" class="open-login-screen button button-fill button-raised">JÁ TENHO CADASTRO</a></p>
+                            <img src="img/logoAts.png" style="width: 50%; margin-left: 25%; margin-top: 5%; margin-bottom: 10%;">
+                            <p class="buttons-row">
+                                <a href="#" class="open-login-screen button button-fill button-raised color-black">ENTRAR</a>
+                                <a href="#" class="button button-fill button-raised" onclick="window.location = 'EnvMai.html';">CONTATO</a>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -142,7 +143,7 @@
                         </div>
                         <div class="list-block">
                             <ul>
-                                <li><a href="#" id="ahrCone" class="item-link list-button" onclick="consultaCadastro();" style="text-align: center; color: #2196f3;">Conectar</a></li>
+                                <li><a href="#" id="ahrCone" class="item-link list-button color-red" onclick="consultaCadastro();" style="text-align: center;">Conectar</a></li>
                             </ul>
                             <div class="list-block-label">
                                 <p><a href="#">Esqueci minha senha</a></p>
@@ -164,7 +165,7 @@
         var goTxUsua = document.getElementById("txtUsua");
         var goTxSenh = document.getElementById("txtSenh");
         var gcWsHttp = "http://localhost/VS2013/ERP/ATS/WebService/Application/Service.svc/";
-        
+
         var myApp = new Framework7({
             material: true,
 
