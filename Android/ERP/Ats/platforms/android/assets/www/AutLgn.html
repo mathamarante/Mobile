@@ -43,8 +43,8 @@
 
                     try {
                         if (loWkRsql.id_cadt > 0) {
-                            //localStorage.setItem("oUCnCadt", JSON.stringify(loWkRsql));
-                            //window.location = "PagLay.html";
+                            localStorage.setItem("oUCnCadt", JSON.stringify(loWkRsql));
+                            window.location = "PagLay.html";
                             myApp.alert("USUÁRIO LOGADO", "SUCESSO");
                         }
                         else { myApp.alert("USUÁRIO OU SENHA INVÁLIDOS", "ERRO"); }
@@ -142,10 +142,10 @@
                         </div>
                         <div class="list-block">
                             <ul>
-                                <li><a href="#" class="item-link list-button" onclick="consultaCadastro();" style="text-align: center; color: #2196f3;">Conectar</a></li>
+                                <li><a href="#" id="ahrCone" class="item-link list-button" onclick="consultaCadastro();" style="text-align: center; color: #2196f3;">Conectar</a></li>
                             </ul>
                             <div class="list-block-label">
-                                <p>ATS Consultoria e Sistemas</p>
+                                <p><a href="#">Esqueci minha senha</a></p>
                                 <p><a href="#" class="close-login-screen">Finalizar</a></p>
                             </div>
                         </div>
@@ -159,6 +159,7 @@
     <script type="text/javascript" src="framework7/js/my-app.js"></script>
     <script type="text/javascript" src="js/md5.min.js"></script>
     <script type="text/javascript" src="js/jquery-2.2.0.min.js"></script>
+    <script type="text/javascript" src="js/script.js"></script>
     <script>
         var goTxUsua = document.getElementById("txtUsua");
         var goTxSenh = document.getElementById("txtSenh");
@@ -183,6 +184,8 @@
             myApp.hideIndicator();
         });
 
+        OkTecladoAndroidFocu("txtUsua", "txtSenh");
+        OkTecladoAndroidBotao("txtSenh", "ahrCone");
     </script>
 </body>
 </html>
